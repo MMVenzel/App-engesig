@@ -30,7 +30,7 @@ def set_background(image_file):
 set_background("plano de fundo.jpg")
 
 # Título
-st.title("Orçamento de sinalização")
+st.title("Central de Custos | Sinalização")
 
 # Tabelas de preços
 precos_amplificador = {
