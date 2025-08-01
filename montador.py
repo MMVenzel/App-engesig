@@ -167,7 +167,7 @@ if total > 0:
         .grafico-flutuante {{
             position: fixed;
             top: 300px;
-            left: 10px;
+            left: 50px;
             width: 200px;
             z-index: 10000;
             background: none;
