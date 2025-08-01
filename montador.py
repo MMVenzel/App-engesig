@@ -97,12 +97,12 @@ precos_cor_led = {
 # Entradas do usuário
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
-if amplificador == "100W":
-    qtd_driver = st.selectbox("Acompanha driver?:", [Não, Sim])
-elif amplificador == "200W":
-    qtd_driver = st.selectbox("Acompanha driver?:", [Não, Sim])
-else:
-    qtd_driver = 0
+# Lógica do driver incluso
+qtd_driver = 0
+if amplificador in ["100W", "200W"]:
+    driver_incluso = st.selectbox("Acompanha driver?", ["Não", "Sim"])
+    if driver_incluso == "Sim":
+        qtd_driver = 1 if amplificador == "100W" else 2
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
@@ -135,7 +135,7 @@ if tipo_modulo != "Nenhum":
 # Resultado final
 st.subheader(f" 💵 Custo Estimado: R$ {total:.2f}")
 
-# Rodapé no canto inferior esquerdo (corrigido)
+# Rodapé no canto inferior esquerdo
 st.markdown("""
     <style>
     .rodape {
@@ -153,7 +153,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Logo flutuante
-logo_path = Path("logo.png")  # ajuste conforme a extensão real do arquivo
+logo_path = Path("logo.png")
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
