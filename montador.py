@@ -44,7 +44,7 @@ def set_background(image_file):
 
     header {{visibility: hidden;}}
     </style>
-    ''', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
@@ -135,7 +135,7 @@ if tipo_modulo != "Nenhum":
 # Resultado final
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
 
-# Rodapé no canto inferior esquerdo (sem fundo)
+# Rodapé no canto inferior esquerdo (sem fundo preto)
 st.markdown("""
     <style>
     .rodape {
@@ -148,12 +148,12 @@ st.markdown("""
     }
     </style>
     <div class='rodape'>
-        © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
+        By: Matteo Marques & Matheus Venzel
     </div>
- """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Logo flutuante
-logo_path = Path("logo.jpg")  # ou "logo.png" conforme o formato
+logo_path = Path("logo.jpg")  # ou "logo.png"
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
