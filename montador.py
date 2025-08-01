@@ -145,20 +145,28 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
 total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gera gráfico flutuante com fundo transparente e texto branco
+# Gera gráfico com nova paleta e layout
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+    colors = ['#2E86AB', '#F28C28', '#58A55C', '#C0392B']
 
-    fig, ax = plt.subplots(figsize=(3, 3), facecolor='none')
+    fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
-        values, labels=labels, autopct='%1.1f%%', startangle=90, textprops={'color': 'white'}
+        values,
+        labels=labels,
+        autopct='%1.1f%%',
+        startangle=90,
+        colors=colors,
+        textprops={'color': 'white', 'fontsize': 9}
     )
+    for text in texts:
+        text.set_fontsize(9)
     ax.axis('equal')
     fig.patch.set_alpha(0)
 
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", transparent=True)
+    fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
     img_base64 = base64.b64encode(buf.read()).decode()
 
@@ -166,9 +174,9 @@ if total > 0:
         <style>
         .grafico-flutuante {{
             position: fixed;
-            top: 300px;
-            left: 50px;
-            width: 200px;
+            top: 290px;
+            left: 30px;
+            width: 190px;
             z-index: 10000;
             background: none;
         }}
