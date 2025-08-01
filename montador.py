@@ -11,19 +11,12 @@ st.set_page_config(
     page_icon="logo_engesig.ico"
 )
 
-# Função para aplicar imagem de fundo com tema escuro fixo e remover header
+# Função para aplicar fundo preto fixo e remover header
 st.markdown("""
     <style>
-    :root {
-        color-scheme: dark;
-    }
-
     .stApp {
-        background-image: url("data:image/jpg;base64,""" + base64.b64encode(open("plano_de_fundo", "rb").read()).decode() + """");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        color: black;
+        background-color: black !important;
+        color: white !important;
     }
 
     html, body, [class*="css"]  {
