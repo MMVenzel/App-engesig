@@ -150,7 +150,7 @@ st.markdown("""
     <div class='rodape'>
         By: Matteo Marques & Matheus Venzel
     </div>
-""", unsafe_allow_html=True)
+ """, unsafe_allow_html=True)
 
 # Logo flutuante
 logo_path = Path("logo.jpg")  # ou "logo.png" conforme o formato
