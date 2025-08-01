@@ -5,13 +5,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import io
 
-# Configura nome e ícone da aba
+# Configura a aba do navegador
 st.set_page_config(
     page_title="Engesig | Central de Custos",
-    page_icon="logo_engesig.png"  # ou logo_engesig.jpg se estiver usando JPG
+    page_icon="logo_engesig.ico"  # Certifique-se que está na mesma pasta que o app.py
 )
 
-# Função para aplicar imagem de fundo com efeito de foco em inputs
+# Função para aplicar imagem de fundo com efeito de foco
 def set_background(image_file):
     st.markdown(f"""
     <style>
@@ -52,7 +52,6 @@ def set_background(image_file):
 
     header {{visibility: hidden;}}
 
-    /* Efeito pulse apenas no foco */
     input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{
         animation: pulse 0.6s;
     }}
@@ -68,7 +67,7 @@ def set_background(image_file):
 # Aplica fundo
 set_background("plano_de_fundo.jpg")
 
-# Tipografia moderna
+# Tipografia
 st.markdown("""
     <style>
     html, body, [class*="css"]  {
@@ -162,7 +161,7 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
 total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gera gráfico com nova paleta e layout
+# Gráfico
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
