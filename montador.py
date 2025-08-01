@@ -91,8 +91,9 @@ else:  # Moto
     qtd_driver = 0
     controlador_tipo = None
 
-quantidade_modulos = st.number_input("Quantidade de módulos auxiliares:", min_value=0, step=1)
+# Escolha do tipo de módulo auxiliar (agora vem primeiro)
 tipo_modulo = st.selectbox("Escolha o tipo de módulo auxiliar:", list(precos_modulo_aux.keys()))
+quantidade_modulos = st.number_input("Quantidade de módulos auxiliares:", min_value=0, step=1)
 
 # Cálculo do custo total
 total = precos_amplificador[amplificador]
