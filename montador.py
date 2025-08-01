@@ -82,10 +82,10 @@ precos_modulo = {
     "D-Max": 30
 }
 
-precos_tipo_led_por_modulo = {
-    "Nano": {"3W": 3.0},
-    "Micro": {"Q-Max": 1.5, "OPT": 2.0, "3W": 3.0},
-    "D-Max": {"Q-Max": 1.5, "OPT": 2.0, "3W": 3.0}
+precos_tipo_led = {
+    "Q-Max": 1.5,
+    "OPT": 2.0,
+    "3W": 3.0
 }
 
 precos_cor_led = {
@@ -108,41 +108,43 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 
 st.markdown("### Módulo Auxiliar")
 
+# Regras de compatibilidade entre módulo e tipo de LED
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
-if tipo_modulo != "Nenhum":
-    tipos_led_disponiveis = list(precos_tipo_led_por_modulo[tipo_modulo].keys())
-    tipo_led = st.selectbox("Tipo de LED:", tipos_led_disponiveis)
-    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
-    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
-else:
+if tipo_modulo == "Nenhum":
     tipo_led = None
     cor_led = None
     qtd_leds = 0
+elif tipo_modulo == "Nano":
+    tipo_led = "3W"
+    st.markdown("Tipo de LED: 3W (fixo para módulo Nano)")
+    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
+    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
+else:
+    tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
+    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
+    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
 
 # Cálculo do custo total
 total = precos_amplificador[amplificador]
 total += qtd_driver * preco_driver
 total += precos_controlador[controlador_tipo]
 if tipo_modulo != "Nenhum":
-    total += precos_modulo[tipo_modulo] + precos_tipo_led_por_modulo[tipo_modulo][tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
+    total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
 # Resultado final
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
 
-# Rodapé
+# Rodapé no canto inferior esquerdo (sem fundo)
 st.markdown("""
     <style>
     .rodape {
         position: fixed;
         bottom: 0;
         left: 10px;
-        background: none;
         color: white;
-        padding: 8px 12px;
         font-size: 12px;
         z-index: 9999;
-        border-radius: 4px;
     }
     </style>
     <div class='rodape'>
@@ -151,16 +153,16 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Logo flutuante
-logo_path = Path("logo.jpg")  # alterado para .jpg
+logo_path = Path("logo.jpg")  # ou "logo.png" conforme o formato
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
         <style>
         .logo-fixa {{
             position: fixed;
-            top: 50px;
-            left: 50px;
-            width: 220px;
+            top: 40px;
+            left: 40px;
+            width: 160px;
             z-index: 10000;
         }}
         </style>
