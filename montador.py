@@ -11,47 +11,67 @@ st.set_page_config(
     page_icon="logo_engesig.ico"
 )
 
-# Função para aplicar imagem de fundo com efeito de foco
-
-def set_background(image_file):
-    st.markdown(f"""
+# Função para aplicar imagem de fundo com tema escuro fixo e remover header
+st.markdown("""
     <style>
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{base64.b64encode(open(image_file, "rb").read()).decode()}");
+    :root {
+        color-scheme: dark;
+    }
+
+    .stApp {
+        background-image: url("data:image/jpg;base64,""" + base64.b64encode(open("plano_de_fundo.jpg", "rb").read()).decode() + """");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        color: black;
-    }}
+        color: white;
+    }
 
-    h1, h2, h3, h4, h5, h6, p, label, div, span {{
-        color: white !important;
-    }}
-
-    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{
-        animation: pulse 0.6s;
-    }}
-
-    @keyframes pulse {{
-        0% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }}
-        70% {{ box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }}
-        100% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }}
-    }}
-    </style>
-    """, unsafe_allow_html=True)
-
-# Aplica fundo
-set_background("plano_de_fundo.jpg")
-
-# Tipografia
-st.markdown("""
-    <style>
     html, body, [class*="css"]  {
         font-family: 'Segoe UI', sans-serif;
         font-size: 16px;
+        color: white;
     }
-    .stApp {
-        padding: 2rem;
+
+    h1, h2, h3, h4, h5, h6, p, label, div, span {
+        color: white !important;
+    }
+
+    .stSelectbox div[data-baseweb="select"] * {
+        color: white !important;
+        background-color: rgba(30, 30, 30, 0.7) !important;
+    }
+
+    div[data-baseweb="popover"] * {
+        color: white !important;
+        background-color: #333 !important;
+    }
+
+    .stSelectbox input, input[type="number"] {
+        color: white !important;
+        background-color: rgba(30, 30, 30, 0.7) !important;
+    }
+
+    .css-1cpxqw2, .css-1d391kg {
+        color: white !important;
+    }
+
+    header {
+        visibility: hidden;
+    }
+
+    [data-testid="stHeader"] {
+        height: 0rem;
+        padding: 0rem;
+    }
+
+    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {
+        animation: pulse 0.6s;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -94,6 +114,7 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 st.markdown("### 🔧 Módulo Auxiliar")
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
+# LED
 tipo_led = None
 qtd_leds_por_cor = {}
 config_led = None
@@ -141,8 +162,9 @@ st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulos Aux.']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
-    colors = ['#e30613', '#595959', '#bfbfbf', '#ffffff']
-    
+    colors = ['#e50914', '#404040', '#bfbfbf', '#ffffff']
+    text_colors = ['white', 'white', 'white', 'black']
+
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
         values,
@@ -150,16 +172,14 @@ if total > 0:
         autopct='%1.1f%%',
         startangle=90,
         colors=colors,
-        textprops={'fontsize': 9, 'color': 'white'}
+        textprops={'fontsize': 9}
     )
 
-    for i, atext in enumerate(autotexts):
-        if labels[i] == "Módulos Aux.":
-            atext.set_color('black')
-
-    for text in texts:
-        text.set_color('white')
+    for i, text in enumerate(texts):
+        text.set_color("white")
         text.set_fontsize(9)
+    for i, autotext in enumerate(autotexts):
+        autotext.set_color(text_colors[i])
 
     ax.axis('equal')
     fig.patch.set_alpha(0)
