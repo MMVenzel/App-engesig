@@ -178,6 +178,31 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
     for cor, qtd in qtd_leds_por_cor.items():
         total += qtd * precos_cor_led[cor]
 
+import matplotlib.pyplot as plt
+
+# Cálculo dos valores de cada componente para o gráfico
+valor_amplificador = precos_amplificador[amplificador]
+valor_driver = qtd_driver * preco_driver
+valor_controlador = precos_controlador[controlador_tipo]
+valor_modulo_led = 0
+
+if tipo_modulo != "Nenhum" and tipo_led and config_led:
+    preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led][config_led]
+    valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
+    for cor, qtd in qtd_leds_por_cor.items():
+        valor_modulo_led += qtd * precos_cor_led[cor]
+
+# Montagem do gráfico
+labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
+values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+
+fig, ax = plt.subplots()
+ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+ax.axis('equal')
+st.markdown("### 📊 Distribuição do Custo")
+st.pyplot(fig)
+
+
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # Rodapé
