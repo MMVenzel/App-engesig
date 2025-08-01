@@ -71,9 +71,9 @@ precos_controlador = {
 }
 
 precos_modulo_aux = {
-    "Micro D-Max Quantum": 1,
+    "Micro Q-Max": 48.15,
     "Micro D-Max OPT": 1,
-    "Micro D-Max Single Color 4 Leds": 1,
+    "Micro D-Max Single Color 4 Leds": 69.41,
     "Micro D-Max Single Color 6 Leds": 1,
     "Micro D-Max Dual Color": 1,
 }
