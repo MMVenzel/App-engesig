@@ -47,8 +47,8 @@ precos_controlador = {
     "Micro 4B S/ Mic": 1,
     "Micro 4B com Mic": 137.32,
     "Handheld 9B Magnético": 216.44,
-    "Handheld 15B Magnético": 194.57,
-    "Handheld 18B Magnético": 1,
+    "Handheld 15B": 194.57,
+    "Handheld 18B": 1,
     "Controlador Fixo 15B": 1,
     "Controlador Fixo 17B": 1,
 }
