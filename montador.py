@@ -1,10 +1,11 @@
 import streamlit as st
 from PIL import Image
 import base64
+from pathlib import Path
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
-    st.markdown(f'''
+    st.markdown(f"""
     <style>
     .stApp {{
         background-image: url("data:image/jpg;base64,{base64.b64encode(open(image_file, "rb").read()).decode()}");
@@ -81,10 +82,10 @@ precos_modulo = {
     "D-Max": 30
 }
 
-precos_tipo_led = {
-    "Q-Max": 1.5,
-    "OPT": 2.0,
-    "3W": 3.0
+precos_tipo_led_por_modulo = {
+    "Nano": {"3W": 3.0},
+    "Micro": {"Q-Max": 1.5, "OPT": 2.0, "3W": 3.0},
+    "D-Max": {"Q-Max": 1.5, "OPT": 2.0, "3W": 3.0}
 }
 
 precos_cor_led = {
@@ -110,7 +111,8 @@ st.markdown("### Módulo Auxiliar")
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
 if tipo_modulo != "Nenhum":
-    tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
+    tipos_led_disponiveis = list(precos_tipo_led_por_modulo[tipo_modulo].keys())
+    tipo_led = st.selectbox("Tipo de LED:", tipos_led_disponiveis)
     cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
     qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
 else:
@@ -123,27 +125,11 @@ total = precos_amplificador[amplificador]
 total += qtd_driver * preco_driver
 total += precos_controlador[controlador_tipo]
 if tipo_modulo != "Nenhum":
-    total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
+    total += precos_modulo[tipo_modulo] + precos_tipo_led_por_modulo[tipo_modulo][tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
 # Resultado final
-st.markdown("""
-    <style>
-    .rodape {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        padding: 10px 20px;
-        background: rgba(0, 0, 0, 0.0); /* sem fundo */
-        color: white;
-        font-size: 12px;
-        z-index: 9999;
-    }
-    </style>
-    <div class='rodape'>
-        By: Matteo Marques & Matheus Venzel
-    </div>
-""", unsafe_allow_html=True)
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
+
 # Rodapé
 st.markdown("""
     <style>
@@ -165,9 +151,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Logo flutuante
-from pathlib import Path
-
-logo_path = Path("logo.png")  # troque pelo nome correto do seu arquivo
+logo_path = Path("logo.jpg")  # alterado para .jpg
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
@@ -180,5 +164,5 @@ if logo_path.exists():
             z-index: 10000;
         }}
         </style>
-        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
+        <img class="logo-fixa" src="data:image/jpg;base64,{logo_base64}">
     """, unsafe_allow_html=True)
