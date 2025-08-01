@@ -4,14 +4,24 @@ import base64
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
-    st.markdown(f'''
+    st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
     .stApp {{
         background-image: url("data:image/jpg;base64,{base64.b64encode(open(image_file, "rb").read()).decode()}");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
         color: white;
+    }}
+
+    h1 {{
+        font-family: 'Montserrat', sans-serif !important;
+    }}
+
+    header {{
+        visibility: hidden;
     }}
 
     h1, h2, h3, h4, h5, h6, p, label, div, span {{
@@ -40,10 +50,8 @@ def set_background(image_file):
     .css-1cpxqw2, .css-1d391kg {{
         color: white !important;
     }}
-
-    header {{visibility: hidden;}}
     </style>
-    ''', unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
@@ -51,7 +59,7 @@ set_background("plano_de_fundo.jpg")
 # Título
 st.title("Central de Custos | Sinalização")
 
-# Tabelas de preços
+# Preços
 precos_amplificador = {
     "Nenhum": 0,
     "100W": 338.19,
@@ -74,57 +82,66 @@ precos_controlador = {
     "Controlador Fixo 17B": 1,
 }
 
-precos_modulo = {
+# Tipo de módulo
+tipos_modulo = {
     "Nenhum": 0,
     "Nano": 10,
     "Micro": 20,
     "D-Max": 30
 }
 
-precos_tipo_led = {
-    "Q-Max": 1.5,
-    "OPT": 2.0,
-    "3W": 3.0
+# Custo da placa por tipo de LED
+tipos_led = {
+    "Q-Max": 1.50,
+    "OPT": 2.00,
+    "3W": 3.00
 }
 
-precos_cor_led = {
-    "Q-Max": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
-    "OPT": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
-    "3W": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+# Custo por cor de LED (iguais por enquanto para todos os tipos)
+cores_led = {
+    "Ambar": 5.00,
+    "Rubi": 1.00,
+    "Blue": 1.50,
+    "White": 3.00
 }
 
-# Entradas do usuário
+# Entradas de amplificador, driver e controlador
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
 if amplificador == "100W":
     qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1])
 elif amplificador == "200W":
     qtd_driver = st.selectbox("Quantidade de drivers:", [0, 2])
-else:
+elif amplificador == "Moto":
     qtd_driver = 0
+else:
+    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1, 2])
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-st.markdown("### Módulo Auxiliar")
-
-tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
-
+# Entradas para módulo
+tipo_modulo = st.selectbox("Escolha o tipo de módulo:", list(tipos_modulo.keys()))
 if tipo_modulo != "Nenhum":
-    tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
-    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
+    tipo_led = st.selectbox("Escolha o tipo de LED:", list(tipos_led.keys()))
+    cor_led = st.selectbox("Escolha a cor do LED:", list(cores_led.keys()))
     qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
 else:
     tipo_led = None
     cor_led = None
     qtd_leds = 0
 
-# Cálculo do custo total
-total = precos_amplificador[amplificador]
-total += qtd_driver * preco_driver
-total += precos_controlador[controlador_tipo]
-if tipo_modulo != "Nenhum":
-    total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
+# Cálculo total
 
-# Resultado final
+# Módulo + placa + leds
+if tipo_modulo == "Nenhum":
+    custo_modulo = 0
+else:
+    custo_modulo = tipos_modulo[tipo_modulo] + tipos_led[tipo_led] + (cores_led[cor_led] * qtd_leds)
+
+# Soma geral
+custo_total = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo] + custo_modulo
+
+# Resultado
 st.markdown("---")
-st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
+st.subheader(f"💰 Custo Estimado: R$ {custo_total:.2f}")
+
