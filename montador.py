@@ -3,6 +3,7 @@ from PIL import Image
 import base64
 from pathlib import Path
 import matplotlib.pyplot as plt
+import io
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
@@ -47,7 +48,7 @@ def set_background(image_file):
     </style>
     """, unsafe_allow_html=True)
 
-# Aplica imagem de fundo
+# Aplica fundo
 set_background("plano_de_fundo.jpg")
 
 # Tipografia moderna
@@ -63,43 +64,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Título
-st.title("Central de Custos | Sinalização")
-
-# Tabelas de preços
-precos_amplificador = {
-    "Nenhum": 0,
-    "100W": 338.19,
-    "200W": 547.47,
-    "Moto": 392.55
-}
-
+# Dados
+precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
-
 precos_controlador = {
-    "Nenhum": 0,
-    "Micro 3B Moto": 90.98,
-    "Micro 3B C/ Mic": 1,
-    "Micro 4B S/ Mic": 1,
-    "Micro 4B com Mic": 137.32,
-    "Handheld 9B Magnético": 216.44,
-    "Handheld 15B": 194.57,
-    "Handheld 18B": 1,
-    "Controlador Fixo 15B": 1,
-    "Controlador Fixo 17B": 1,
+    "Nenhum": 0, "Micro 3B Moto": 90.98, "Micro 3B C/ Mic": 1, "Micro 4B S/ Mic": 1,
+    "Micro 4B com Mic": 137.32, "Handheld 9B Magnético": 216.44, "Handheld 15B": 194.57,
+    "Handheld 18B": 1, "Controlador Fixo 15B": 1, "Controlador Fixo 17B": 1
 }
-
-precos_modulo = {
-    "Nenhum": 0,
-    "Nano": 39.67,
-    "Micro": 25.69,
-    "D-Max": 28.67
-}
-
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.67}
 precos_tipo_led_config = {
-    "Nano": {
-        "3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}
-    },
+    "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
         "3W": {"Single": 25, "Dual": 35, "Tri": 40},
         "Q-Max": {"Single": 22, "Dual": 30, "Tri": 34},
@@ -111,13 +86,10 @@ precos_tipo_led_config = {
         "OPT": {"Single": 24, "Dual": 34, "Tri": 39},
     }
 }
+precos_cor_led = {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3}
 
-precos_cor_led = {
-    "Ambar": 5,
-    "Rubi": 1,
-    "Blue": 1.5,
-    "White": 3
-}
+# Título
+st.title("Central de Custos | Sinalização")
 
 # Entradas
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
@@ -127,7 +99,6 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
-
 st.markdown("### 🔧 Módulo Auxiliar")
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
@@ -159,7 +130,7 @@ if tipo_modulo != "Nenhum":
     elif len(cores_escolhidas) >= 3:
         config_led = "Tri"
 
-# Cálculo total
+# Cálculo
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
@@ -172,21 +143,38 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
         valor_modulo_led += qtd * precos_cor_led[cor]
 
 total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
-
-# Resultado
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gráfico sem fundo
+# Gera gráfico flutuante com fundo transparente e texto branco
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
 
-    fig, ax = plt.subplots(figsize=(6, 6), facecolor='none')
-    ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    fig, ax = plt.subplots(figsize=(3, 3), facecolor='none')
+    wedges, texts, autotexts = ax.pie(
+        values, labels=labels, autopct='%1.1f%%', startangle=90, textprops={'color': 'white'}
+    )
     ax.axis('equal')
-    fig.patch.set_alpha(0.0)
-    st.markdown("### 📊 Distribuição do Custo")
-    st.pyplot(fig)
+    fig.patch.set_alpha(0)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", transparent=True)
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode()
+
+    st.markdown(f"""
+        <style>
+        .grafico-flutuante {{
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            width: 200px;
+            z-index: 10000;
+            background: none;
+        }}
+        </style>
+        <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
+    """, unsafe_allow_html=True)
 
 # Rodapé
 st.markdown("""
