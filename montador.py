@@ -94,7 +94,6 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 # --- MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modulos = st.number_input("Quantas configurações diferentes de módulo auxiliar deseja adicionar?", min_value=0, step=1, value=0)
-
 valores_modulos = []
 
 for i in range(qtd_modulos):
@@ -153,12 +152,19 @@ if total > 0:
     colors = ['#e50914', '#404040', '#bfbfbf', '#ffffff']
     text_colors = ['white', 'white', 'white', 'black']
 
+    filtered_data = [(l, v, c, tc) for l, v, c, tc in zip(labels, values, colors, text_colors) if v > 0]
+    if not filtered_data:
+        filtered_data = [('Sem dados', 1, '#000000', 'white')]
+
+    labels, values, colors, text_colors = zip(*filtered_data)
+
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
         values,
         labels=labels,
         autopct='%1.1f%%',
         startangle=90,
+        radius=0.85,
         colors=colors,
         textprops={'fontsize': 9}
     )
