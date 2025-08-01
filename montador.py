@@ -77,9 +77,9 @@ precos_controlador = {
 
 precos_modulo = {
     "Nenhum": 0,
-    "Nano": 10,
-    "Micro": 20,
-    "D-Max": 30
+    "Nano": 39.67,
+    "Micro": 25.69,
+    "D-Max": 28.17
 }
 
 precos_tipo_led = {
