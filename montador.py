@@ -36,6 +36,17 @@ def set_background(image_file):
         color: white !important;
     }}
 
+    /* Corrige input numérico (st.number_input) */
+    input[type="number"] {{
+        color: white !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+    }}
+
+    /* Botões + e - do st.number_input */
+    .css-1cpxqw2, .css-1d391kg {{
+        color: white !important;
+    }}
+
     </style>
     """, unsafe_allow_html=True)
 
