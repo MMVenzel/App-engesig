@@ -126,5 +126,21 @@ if tipo_modulo != "Nenhum":
     total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
 # Resultado final
-st.markdown("---")
+st.markdown("""
+    <style>
+    .rodape {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.0); /* sem fundo */
+        color: white;
+        font-size: 12px;
+        z-index: 9999;
+    }
+    </style>
+    <div class='rodape'>
+        By: Matteo Marques & Matheus Venzel
+    </div>
+""", unsafe_allow_html=True)
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
