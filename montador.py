@@ -14,7 +14,7 @@ def set_background(image_file):
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        color: white;
+        color: black;
     }}
 
     h1, h2, h3, h4, h5, h6, p, label, div, span {{
