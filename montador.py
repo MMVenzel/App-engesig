@@ -47,15 +47,15 @@ def set_background(image_file):
     header {{visibility: hidden;}}
 
     /* Novo efeito pulse apenas no foco */
-    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {
+    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{
         animation: pulse 0.6s;
-    }
+    }}
 
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-    }
+    @keyframes pulse {{
+        0% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }}
+        70% {{ box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }}
+        100% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }}
+    }}
     </style>
     """, unsafe_allow_html=True)
 
