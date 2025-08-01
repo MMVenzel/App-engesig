@@ -74,7 +74,7 @@ precos_modulo_aux = {
     "Micro Q-Max 3 Leds": 49.97,
     "Micro D-Max OPT 3 Leds": 68.40,
     "Micro D-Max Âmbar 3 Leds": 82.45,
-    "Micro D-Max Âmbar 4 Leds": 
+    "Micro D-Max Âmbar 4 Leds": 1, 
     "Micro D-Max Âmbar 6 Leds": 1,
     "Micro D-Max Dual Color": 1,
 }
