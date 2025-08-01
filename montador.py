@@ -66,7 +66,15 @@ precos_controlador = {
     "Controlador Fixo 17B": 1,
 }
 
-preco_modulo_aux = 75
+precos_modulo_aux = {
+    "Micro D-Max Quantum": 1,
+    "Micro D-Max OPT": 1,
+    "Micro D-Max Single Color 4 Leds": 1,
+    "Micro D-Max Single Color 6 Leds": 1,
+    "Micro D-Max Dual Color": 1,
+}
+    
+    
 
 # Entradas
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
