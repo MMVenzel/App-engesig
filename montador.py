@@ -176,14 +176,15 @@ total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 # Resultado
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gráfico
+# Gráfico sem fundo
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 6), facecolor='none')
     ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
     ax.axis('equal')
+    fig.patch.set_alpha(0.0)
     st.markdown("### 📊 Distribuição do Custo")
     st.pyplot(fig)
 
