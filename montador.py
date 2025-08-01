@@ -82,6 +82,17 @@ precos_cor_led = {
     "Q-MAX": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60}
 }
 
+# Limites de cores permitidas
+limite_cores = {
+    ("Nano", "3W"): 3,
+    ("Micro", "3W"): 3,
+    ("Micro", "OPT"): 2,
+    ("Micro", "Q-MAX"): 1,
+    ("D-Max", "3W"): 3,
+    ("D-Max", "OPT"): 2,
+    ("D-Max", "Q-MAX"): 1
+}
+
 # --- TÍTULO E OPÇÕES FIXAS ---
 st.title("Central de Custos | Sinalização")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
@@ -94,6 +105,7 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 # --- MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modulos = st.number_input("Quantas configurações diferentes de módulo auxiliar deseja adicionar?", min_value=0, step=1, value=0)
+
 valores_modulos = []
 
 for i in range(qtd_modulos):
@@ -108,6 +120,7 @@ for i in range(qtd_modulos):
             tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
             tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
 
+            max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
             col1, col2, col3 = st.columns(3)
             with col1: usar_ambar = st.checkbox("Usar Ambar", key=f"ambar_{i}")
             with col2: usar_rubi = st.checkbox("Usar Rubi", key=f"rubi_{i}")
@@ -118,24 +131,27 @@ for i in range(qtd_modulos):
             for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_ambar, usar_rubi, usar_blue, usar_white]):
                 if usar:
                     cores_escolhidas.append(cor)
+
+            if len(cores_escolhidas) > max_cores:
+                st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led}' permite no máximo {max_cores} cores.")
+            else:
+                for cor in cores_escolhidas:
                     qtd = st.number_input(f"Quantidade de LEDs {cor} (#{i+1})", min_value=0, step=1, key=f"qtd_{cor}_{i}")
                     qtd_leds_por_cor[cor] = qtd
 
-            if len(cores_escolhidas) == 1:
-                config_led = "Single"
-            elif len(cores_escolhidas) == 2:
-                config_led = "Dual"
-            elif len(cores_escolhidas) >= 3:
-                config_led = "Tri"
+                if len(cores_escolhidas) == 1:
+                    config_led = "Single"
+                elif len(cores_escolhidas) == 2:
+                    config_led = "Dual"
+                elif len(cores_escolhidas) >= 3:
+                    config_led = "Tri"
 
-            preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, list(precos_tipo_led_config[tipo_modulo][tipo_led].values())[0])
-            valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
-
-            for cor, qtd in qtd_leds_por_cor.items():
-                cor_led_price = precos_cor_led[tipo_led][cor] if tipo_led in precos_cor_led else 0
-                valor_modulo_led += qtd * cor_led_price
-
-            valores_modulos.append(valor_modulo_led * qtd_mod)
+                preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, list(precos_tipo_led_config[tipo_modulo][tipo_led].values())[0])
+                valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
+                for cor, qtd in qtd_leds_por_cor.items():
+                    cor_led_price = precos_cor_led[tipo_led][cor] if tipo_led in precos_cor_led else 0
+                    valor_modulo_led += qtd * cor_led_price
+                valores_modulos.append(valor_modulo_led * qtd_mod)
 
 # --- CÁLCULO FINAL ---
 valor_amplificador = precos_amplificador[amplificador]
@@ -152,19 +168,12 @@ if total > 0:
     colors = ['#e50914', '#404040', '#bfbfbf', '#ffffff']
     text_colors = ['white', 'white', 'white', 'black']
 
-    filtered_data = [(l, v, c, tc) for l, v, c, tc in zip(labels, values, colors, text_colors) if v > 0]
-    if not filtered_data:
-        filtered_data = [('Sem dados', 1, '#000000', 'white')]
-
-    labels, values, colors, text_colors = zip(*filtered_data)
-
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
         values,
         labels=labels,
         autopct='%1.1f%%',
         startangle=90,
-        radius=0.85,
         colors=colors,
         textprops={'fontsize': 9}
     )
