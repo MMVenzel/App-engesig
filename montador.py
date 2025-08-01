@@ -21,7 +21,7 @@ def set_background(image_file):
 
     .stSelectbox div[data-baseweb="select"] * {{
         color: white !important;
-        background-color: rgba(0, 0, 0, 0.6) !important;
+        background-color: rgba(30, 30, 30, 0.7) !important;
     }}
 
     div[data-baseweb="popover"] * {{
@@ -35,7 +35,7 @@ def set_background(image_file):
 
     input[type="number"] {{
         color: white !important;
-        background-color: rgba(0, 0, 0, 0.6) !important;
+        background-color: rgba(30, 30, 30, 0.7) !important;
     }}
 
     .css-1cpxqw2, .css-1d391kg {{
@@ -48,6 +48,19 @@ def set_background(image_file):
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
+
+# Tipografia moderna e espaçamento profissional
+st.markdown("""
+    <style>
+    html, body, [class*="css"]  {
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 16px;
+    }
+    .stApp {
+        padding: 2rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Título
 st.title("Central de Custos | Sinalização")
@@ -99,10 +112,10 @@ precos_tipo_led_config = {
 }
 
 precos_cor_led = {
-    "Ambar": 1,
+    "Ambar": 5,
     "Rubi": 1,
-    "Blue": 1,
-    "White": 1
+    "Blue": 1.5,
+    "White": 3
 }
 
 # Entradas do usuário
@@ -116,7 +129,7 @@ if amplificador in ["100W", "200W"]:
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-st.markdown("### Módulo Auxiliar")
+st.markdown("### 🔧 Módulo Auxiliar")
 
 # Configuração de módulo e LED
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
@@ -165,7 +178,7 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
     for cor, qtd in qtd_leds_por_cor.items():
         total += qtd * precos_cor_led[cor]
 
-st.subheader(f"\U0001F4B5 Custo Estimado: R$ {total:.2f}")
+st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # Rodapé
 st.markdown("""
