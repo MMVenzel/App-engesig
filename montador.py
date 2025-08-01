@@ -5,6 +5,12 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import io
 
+# Configura nome e ícone da aba
+st.set_page_config(
+    page_title="Engesig | Central de Custos",
+    page_icon="logo_engesig.png"  # ou logo_engesig.jpg se estiver usando JPG
+)
+
 # Função para aplicar imagem de fundo com efeito de foco em inputs
 def set_background(image_file):
     st.markdown(f"""
@@ -46,7 +52,7 @@ def set_background(image_file):
 
     header {{visibility: hidden;}}
 
-    /* Novo efeito pulse apenas no foco */
+    /* Efeito pulse apenas no foco */
     input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{
         animation: pulse 0.6s;
     }}
