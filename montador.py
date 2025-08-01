@@ -148,7 +148,7 @@ st.markdown("""
     }
     </style>
     <div class='rodape'>
-        By: Matteo Marques & Matheus Venzel
+        © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
     </div>
 """, unsafe_allow_html=True)
 
