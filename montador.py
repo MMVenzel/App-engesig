@@ -167,7 +167,7 @@ st.markdown("""
 # Logo flutuante
 from pathlib import Path
 
-logo_path = Path("logo.jpeg")  # troque pelo nome correto do seu arquivo
+logo_path = Path("logo.png")  # troque pelo nome correto do seu arquivo
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
