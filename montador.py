@@ -176,7 +176,7 @@ if total > 0:
             position: fixed;
             top: 290px;
             left: 30px;
-            width: 190px;
+            width: 300px;
             z-index: 10000;
             background: none;
         }}
