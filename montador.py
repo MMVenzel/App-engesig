@@ -51,7 +51,7 @@ def set_background(image_file):
 # Aplica fundo
 set_background("plano_de_fundo.jpg")
 
-# Tipografia moderna
+# Tipografia moderna e animação de resposta tátil
 st.markdown("""
     <style>
     html, body, [class*="css"]  {
@@ -60,6 +60,23 @@ st.markdown("""
     }
     .stApp {
         padding: 2rem;
+    }
+
+    div[data-baseweb="select"]:focus-within {
+        border: 2px solid #00FFAA !important;
+        animation: pulse 0.3s ease-in-out;
+        border-radius: 8px;
+    }
+
+    @keyframes pulse {
+        0%   { box-shadow: 0 0 0px #00FFAA; }
+        50%  { box-shadow: 0 0 8px #00FFAA; }
+        100% { box-shadow: 0 0 0px #00FFAA; }
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 10px #00FFAA;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -131,6 +148,7 @@ if tipo_modulo != "Nenhum":
         config_led = "Tri"
 
 # Cálculo
+total = 0
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
@@ -145,7 +163,7 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
 total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gera gráfico com nova paleta e layout
+# Gráfico flutuante
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
     values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
