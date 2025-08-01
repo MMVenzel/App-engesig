@@ -77,9 +77,9 @@ precos_controlador = {
 
 precos_modulo = {
     "Nenhum": 0,
-    "Nano": 39.67,
-    "Micro": 25.69,
-    "D-Max": 28.17
+    "Nano": 10,
+    "Micro": 20,
+    "D-Max": 30
 }
 
 precos_tipo_led = {
@@ -135,7 +135,7 @@ if tipo_modulo != "Nenhum":
 # Resultado final
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
 
-# Rodapé no canto inferior esquerdo (sem fundo preto)
+# Rodapé no canto inferior esquerdo (corrigido)
 st.markdown("""
     <style>
     .rodape {
@@ -147,13 +147,13 @@ st.markdown("""
         z-index: 9999;
     }
     </style>
-    <div class='rodape'>
+    <div class="rodape">
         © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
     </div>
 """, unsafe_allow_html=True)
 
 # Logo flutuante
-logo_path = Path("logo.jpg")  # ou "logo.png"
+logo_path = Path("logo.png")  # ajuste conforme a extensão real do arquivo
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
     st.markdown(f"""
@@ -166,5 +166,5 @@ if logo_path.exists():
             z-index: 10000;
         }}
         </style>
-        <img class="logo-fixa" src="data:image/jpg;base64,{logo_base64}">
+        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
     """, unsafe_allow_html=True)
