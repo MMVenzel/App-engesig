@@ -23,7 +23,7 @@ st.markdown("""
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        color: white;
+        color: black;
     }
 
     html, body, [class*="css"]  {
