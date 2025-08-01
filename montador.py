@@ -12,6 +12,7 @@ st.set_page_config(
 )
 
 # Função para aplicar imagem de fundo com efeito de foco
+
 def set_background(image_file):
     st.markdown(f"""
     <style>
@@ -26,31 +27,6 @@ def set_background(image_file):
     h1, h2, h3, h4, h5, h6, p, label, div, span {{
         color: white !important;
     }}
-
-    .stSelectbox div[data-baseweb="select"] * {{
-        color: white !important;
-        background-color: rgba(30, 30, 30, 0.7) !important;
-    }}
-
-    div[data-baseweb="popover"] * {{
-        color: white !important;
-        background-color: #333 !important;
-    }}
-
-    .stSelectbox input {{
-        color: white !important;
-    }}
-
-    input[type="number"] {{
-        color: white !important;
-        background-color: rgba(30, 30, 30, 0.7) !important;
-    }}
-
-    .css-1cpxqw2, .css-1d391kg {{
-        color: white !important;
-    }}
-
-    header {{visibility: hidden;}}
 
     input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{
         animation: pulse 0.6s;
@@ -161,31 +137,30 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
 total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# Gráfico com ajustes visuais e nova paleta
+# Gráfico
 if total > 0:
-    all_labels = ['Amplificador', 'Driver', 'Controlador', 'Módulos Aux.']
-    all_values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
-    all_colors = ['#E30613', '#444444', '#D9D9D9', '#FFFFFF']
-    all_text_colors = ['white', 'white', 'white', 'black']
-
-    labels = [l for l, v in zip(all_labels, all_values) if v > 0]
-    values = [v for v in all_values if v > 0]
-    colors = [c for v, c in zip(all_values, all_colors) if v > 0]
-    text_colors = [tc for v, tc in zip(all_values, all_text_colors) if v > 0]
-
+    labels = ['Amplificador', 'Driver', 'Controlador', 'Módulos Aux.']
+    values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+    colors = ['#e30613', '#595959', '#bfbfbf', '#ffffff']
+    
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
         values,
         labels=labels,
         autopct='%1.1f%%',
         startangle=90,
-        colors=colors
+        colors=colors,
+        textprops={'fontsize': 9, 'color': 'white'}
     )
-    for text, tc in zip(autotexts, text_colors):
-        text.set_color(tc)
+
+    for i, atext in enumerate(autotexts):
+        if labels[i] == "Módulos Aux.":
+            atext.set_color('black')
+
+    for text in texts:
+        text.set_color('white')
         text.set_fontsize(9)
-    for t in texts:
-        t.set_fontsize(9)
+
     ax.axis('equal')
     fig.patch.set_alpha(0)
 
