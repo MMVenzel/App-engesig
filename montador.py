@@ -6,29 +6,26 @@ import base64
 def set_background(image_file):
     st.markdown("""
     <style>
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    .css-18ni7ap.e8zbici2 {visibility: hidden;}
-    </style>
-    """, unsafe_allow_html=True)
-    with open(image_file, "rb") as f:
-        data = f.read()
-    encoded = base64.b64encode(data).decode()
-    css = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{encoded}");
+    header, footer, .css-18ni7ap.e8zbici2 {visibility: hidden;}
+
+    .stApp {
+        background-image: url("data:image/jpg;base64,{bg}");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
         color: white;
-    }}
-    h1, h2, h3, h4, h5, h6, p, label, div {{
+    }
+
+    h1, h2, h3, h4, h5, h6, p, label, div {
         color: white !important;
-    }}
+    }
+
+    /* Selectbox texto branco */
+    .stSelectbox > div > div > div > div {
+        color: white !important;
+    }
     </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
+    """.replace("{bg}", base64.b64encode(open(image_file, "rb").read()).decode()), unsafe_allow_html=True)
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
