@@ -11,10 +11,12 @@ st.set_page_config(
     page_icon="logo_engesig.ico"
 )
 
-# Estilo escuro fixo (sem imagem de fundo)
+# Função para aplicar fundo preto fixo e remover header
 st.markdown("""
     <style>
-    :root { color-scheme: dark; }
+    :root {
+        color-scheme: dark;
+    }
 
     .stApp {
         background-color: black !important;
@@ -46,7 +48,13 @@ st.markdown("""
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
 
-    header { visibility: hidden; }
+    .css-1cpxqw2, .css-1d391kg {
+        color: white !important;
+    }
+
+    header {
+        visibility: hidden;
+    }
 
     [data-testid="stHeader"] {
         height: 0rem;
@@ -79,16 +87,19 @@ precos_tipo_led_config = {
     "Micro": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
         "OPT": {"Single": 13.97},
-        "Q-MAX": {"Single": 7.30},
+        "Q-MAX": {"Single": 7.3},
     },
     "D-Max": {
-        "3W": {"Single": 15.20, "Dual": 18.94, "Tri": 23.51},
+        "3W": {"Single": 15.2, "Dual": 18.94, "Tri": 23.51},
         "OPT": {"Single": 15.31},
-        "Q-MAX": {"Single": 9.10},
+        "Q-MAX": {"Single": 9.1},
     }
 }
-precos_cor_led_3w = {"Ambar": 5.79, "Rubi": 3.58, "Blue": 3.58, "White": 3.58}
-precos_cor_led_opt_qmax = {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60}
+precos_cor_led = {
+    "3W": {"Ambar": 5.79, "Rubi": 3.58, "Blue": 3.58, "White": 3.58},
+    "OPT": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60},
+    "Q-MAX": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60}
+}
 
 # Título
 st.title("Central de Custos | Sinalização")
@@ -102,6 +113,7 @@ if amplificador in ["100W", "200W"]:
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 st.markdown("### 🔧 Módulo Auxiliar")
+qtd_modulos = st.number_input("Quantidade de módulos:", min_value=1, step=1, value=1)
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
 # LED
@@ -139,20 +151,21 @@ valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_modulo_led = 0
 
-if tipo_modulo != "Nenhum" and tipo_led:
-    preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, precos_tipo_led_config[tipo_modulo][tipo_led].get("Single", 0))
+if tipo_modulo != "Nenhum" and tipo_led and config_led:
+    preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led][config_led] if config_led in precos_tipo_led_config[tipo_modulo][tipo_led] else precos_tipo_led_config[tipo_modulo][tipo_led]["Single"]
     valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
-    tabela_custos_led = precos_cor_led_3w if tipo_led == "3W" else precos_cor_led_opt_qmax
     for cor, qtd in qtd_leds_por_cor.items():
-        valor_modulo_led += qtd * tabela_custos_led.get(cor, 0)
+        cor_led_price = precos_cor_led[tipo_led][cor] if tipo_led in precos_cor_led else 0
+        valor_modulo_led += qtd * cor_led_price
 
-total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
+valor_modulo_led_total = valor_modulo_led * qtd_modulos
+total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led_total
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # Gráfico
 if total > 0:
     labels = ['Amplificador', 'Driver', 'Controlador', 'Módulos Aux.']
-    values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+    values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led_total]
     colors = ['#e50914', '#404040', '#bfbfbf', '#ffffff']
     text_colors = ['white', 'white', 'white', 'black']
 
