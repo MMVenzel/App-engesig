@@ -174,7 +174,7 @@ if logo_path.exists():
         <style>
         .logo-fixa {{
             position: fixed;
-            top: 20px;
+            top: 40px;
             left: 100px;
             width: 75px;
             z-index: 10000;
