@@ -83,9 +83,9 @@ precos_modulo = {
 }
 
 precos_tipo_led = {
-    "Q-Max": 1.5,
-    "OPT": 2.0,
-    "3W": 3.0
+    "Q-Max": 0,
+    "OPT": 0,
+    "3W": 0
 }
 
 precos_cor_led = {
@@ -133,7 +133,7 @@ if tipo_modulo != "Nenhum":
     total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
 # Resultado final
-st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
+st.subheader(f" Custo Estimado: R$ {total:.2f}")
 
 # Rodapé no canto inferior esquerdo (corrigido)
 st.markdown("""
