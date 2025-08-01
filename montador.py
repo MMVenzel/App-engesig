@@ -58,12 +58,16 @@ preco_modulo_aux = 75
 # Entradas
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
-if amplificador != "Moto":
-    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1, 2])
+if amplificador == "100W":
+    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1])
     controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
-else:
+elif amplificador == "200W":
+    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 2])
+    controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
+else:  # Moto
     qtd_driver = 0
     controlador_tipo = None
+
 
 quantidade_modulos = st.number_input("Quantidade de módulos auxiliares:", min_value=0, step=1)
 
