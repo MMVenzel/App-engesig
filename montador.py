@@ -1,10 +1,11 @@
+"""
 import streamlit as st
 from PIL import Image
 import base64
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
-    st.markdown(f"""
+    st.markdown(f'''
     <style>
     .stApp {{
         background-image: url("data:image/jpg;base64,{base64.b64encode(open(image_file, "rb").read()).decode()}");
@@ -41,11 +42,9 @@ def set_background(image_file):
         color: white !important;
     }}
 
-    /* Esconde a barra branca do topo */
     header {{visibility: hidden;}}
-    .css-18ni7ap.e8zbici2 {{padding-top: 0rem !important;}}
     </style>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
@@ -76,45 +75,58 @@ precos_controlador = {
     "Controlador Fixo 17B": 1,
 }
 
-precos_tipo_modulo = {
+precos_modulo = {
+    "Nenhum": 0,
     "Nano": 10,
     "Micro": 20,
     "D-Max": 30
 }
 
 precos_tipo_led = {
-    "Q-Max": 1.50,
-    "OPT": 2.00,
-    "3W": 3.00
+    "Q-Max": 1.5,
+    "OPT": 2.0,
+    "3W": 3.0
 }
 
-# Preço por cor, por tipo de LED
-preco_cor_led = {
-    "Q-Max": {"Ambar": 5.00, "Rubi": 1.00, "Blue": 1.50, "White": 3.00},
-    "OPT":   {"Ambar": 5.00, "Rubi": 1.00, "Blue": 1.50, "White": 3.00},
-    "3W":    {"Ambar": 5.00, "Rubi": 1.00, "Blue": 1.50, "White": 3.00},
+precos_cor_led = {
+    "Q-Max": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+    "OPT": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+    "3W": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
 }
 
 # Entradas do usuário
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
-qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1, 2])
+
+if amplificador == "100W":
+    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1])
+elif amplificador == "200W":
+    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 2])
+else:
+    qtd_driver = 0
+
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
 st.markdown("### Módulo Auxiliar")
-tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_tipo_modulo.keys()))
-tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
-cor_led = st.selectbox("Cor do LED:", list(preco_cor_led[tipo_led].keys()))
-qtd_leds = st.number_input("Número de LEDs:", min_value=0, step=1)
 
-# Cálculo total
-total = 0
-total += precos_amplificador[amplificador]
+tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
+
+if tipo_modulo != "Nenhum":
+    tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
+    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
+    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
+else:
+    tipo_led = None
+    cor_led = None
+    qtd_leds = 0
+
+# Cálculo do custo total
+total = precos_amplificador[amplificador]
 total += qtd_driver * preco_driver
 total += precos_controlador[controlador_tipo]
-total += precos_tipo_modulo[tipo_modulo]
-total += precos_tipo_led[tipo_led]
-total += qtd_leds * preco_cor_led[tipo_led][cor_led]
+if tipo_modulo != "Nenhum":
+    total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
-# Exibe o resultado
+# Resultado final
 st.markdown("---")
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
+"""
