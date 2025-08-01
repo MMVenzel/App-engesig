@@ -176,7 +176,7 @@ if logo_path.exists():
             position: fixed;
             top: 40px;
             left: 100px;
-            width: 75px;
+            width: 150px;
             z-index: 10000;
         }}
         </style>
