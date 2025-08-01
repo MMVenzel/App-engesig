@@ -99,10 +99,10 @@ precos_tipo_led_config = {
 }
 
 precos_cor_led = {
-    "Ambar": 5,
+    "Ambar": 1,
     "Rubi": 1,
-    "Blue": 1.5,
-    "White": 3
+    "Blue": 1,
+    "White": 1
 }
 
 # Entradas do usuário
