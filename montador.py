@@ -2,6 +2,7 @@ import streamlit as st
 from PIL import Image
 import base64
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
@@ -49,7 +50,7 @@ def set_background(image_file):
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
 
-# Tipografia moderna e espaçamento profissional
+# Tipografia moderna
 st.markdown("""
     <style>
     html, body, [class*="css"]  {
@@ -118,40 +119,32 @@ precos_cor_led = {
     "White": 3
 }
 
-# Entradas do usuário
+# Entradas
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
-
 qtd_driver = 0
 if amplificador in ["100W", "200W"]:
-    driver_incluso = st.selectbox("Acompanha driver?", ["Não", "Sim"])
-    if driver_incluso == "Sim":
+    if st.selectbox("Acompanha driver?", ["Não", "Sim"]) == "Sim":
         qtd_driver = 1 if amplificador == "100W" else 2
 
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
 st.markdown("### 🔧 Módulo Auxiliar")
-
-# Configuração de módulo e LED
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
-if tipo_modulo == "Nenhum":
-    tipo_led = None
-    qtd_leds_por_cor = {}
-    config_led = None
-else:
+tipo_led = None
+qtd_leds_por_cor = {}
+config_led = None
+
+if tipo_modulo != "Nenhum":
     tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
     tipo_led = st.selectbox("Tipo de LED:", tipos_led_disponiveis)
 
     col1, col2, col3 = st.columns(3)
-    with col1:
-        usar_ambar = st.checkbox("Usar Ambar")
-    with col2:
-        usar_rubi = st.checkbox("Usar Rubi")
-    with col3:
-        usar_blue = st.checkbox("Usar Blue")
+    with col1: usar_ambar = st.checkbox("Usar Ambar")
+    with col2: usar_rubi = st.checkbox("Usar Rubi")
+    with col3: usar_blue = st.checkbox("Usar Blue")
     usar_white = st.checkbox("Usar White")
 
-    qtd_leds_por_cor = {}
     cores_escolhidas = []
     for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_ambar, usar_rubi, usar_blue, usar_white]):
         if usar:
@@ -159,28 +152,14 @@ else:
             qtd = st.number_input(f"Quantidade de LEDs {cor}", min_value=0, step=1, key=f"qtd_{cor}")
             qtd_leds_por_cor[cor] = qtd
 
-    num_cores = len(cores_escolhidas)
-    if num_cores == 1:
+    if len(cores_escolhidas) == 1:
         config_led = "Single"
-    elif num_cores == 2:
+    elif len(cores_escolhidas) == 2:
         config_led = "Dual"
-    elif num_cores >= 3:
+    elif len(cores_escolhidas) >= 3:
         config_led = "Tri"
-    else:
-        config_led = None
 
-# Cálculo do custo total
-total = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo]
-
-if tipo_modulo != "Nenhum" and tipo_led and config_led:
-    preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led][config_led]
-    total += precos_modulo[tipo_modulo] + preco_led_config
-    for cor, qtd in qtd_leds_por_cor.items():
-        total += qtd * precos_cor_led[cor]
-
-import matplotlib.pyplot as plt
-
-# Cálculo dos valores de cada componente para o gráfico
+# Cálculo total
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
@@ -192,18 +171,21 @@ if tipo_modulo != "Nenhum" and tipo_led and config_led:
     for cor, qtd in qtd_leds_por_cor.items():
         valor_modulo_led += qtd * precos_cor_led[cor]
 
-# Montagem do gráfico
-labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
-values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+total = valor_amplificador + valor_driver + valor_controlador + valor_modulo_led
 
-fig, ax = plt.subplots()
-ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
-ax.axis('equal')
-st.markdown("### 📊 Distribuição do Custo")
-st.pyplot(fig)
-
-
+# Resultado
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
+
+# Gráfico
+if total > 0:
+    labels = ['Amplificador', 'Driver', 'Controlador', 'Módulo + LED']
+    values = [valor_amplificador, valor_driver, valor_controlador, valor_modulo_led]
+
+    fig, ax = plt.subplots()
+    ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')
+    st.markdown("### 📊 Distribuição do Custo")
+    st.pyplot(fig)
 
 # Rodapé
 st.markdown("""
