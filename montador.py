@@ -82,22 +82,32 @@ precos_modulo = {
     "D-Max": 28.67
 }
 
-precos_tipo_led = {
-    "Q-Max": 0,
-    "OPT": 0,
-    "3W": 0
+precos_tipo_led_config = {
+    "Nano": {
+        "3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}
+    },
+    "Micro": {
+        "3W": {"Single": 25, "Dual": 35, "Tri": 40},
+        "Q-Max": {"Single": 22, "Dual": 30, "Tri": 34},
+        "OPT": {"Single": 21, "Dual": 29, "Tri": 33},
+    },
+    "D-Max": {
+        "3W": {"Single": 27, "Dual": 37, "Tri": 43},
+        "Q-Max": {"Single": 23, "Dual": 32, "Tri": 36},
+        "OPT": {"Single": 24, "Dual": 34, "Tri": 39},
+    }
 }
 
 precos_cor_led = {
-    "Q-Max": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
-    "OPT": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
-    "3W": {"Ambar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+    "Ambar": 5,
+    "Rubi": 1,
+    "Blue": 1.5,
+    "White": 3
 }
 
 # Entradas do usuário
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
-# Lógica do driver incluso
 qtd_driver = 0
 if amplificador in ["100W", "200W"]:
     driver_incluso = st.selectbox("Acompanha driver?", ["Não", "Sim"])
@@ -108,34 +118,56 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 
 st.markdown("### Módulo Auxiliar")
 
-# Regras de compatibilidade entre módulo e tipo de LED
+# Configuração de módulo e LED
 tipo_modulo = st.selectbox("Tipo de módulo:", list(precos_modulo.keys()))
 
 if tipo_modulo == "Nenhum":
     tipo_led = None
-    cor_led = None
-    qtd_leds = 0
-elif tipo_modulo == "Nano":
-    tipo_led = "3W"
-    st.markdown("Tipo de LED: 3W (fixo para módulo Nano)")
-    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
-    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
+    qtd_leds_por_cor = {}
+    config_led = None
 else:
-    tipo_led = st.selectbox("Tipo de LED:", list(precos_tipo_led.keys()))
-    cor_led = st.selectbox("Cor do LED:", list(precos_cor_led[tipo_led].keys()))
-    qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
+    tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
+    tipo_led = st.selectbox("Tipo de LED:", tipos_led_disponiveis)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        usar_ambar = st.checkbox("Usar Ambar")
+    with col2:
+        usar_rubi = st.checkbox("Usar Rubi")
+    with col3:
+        usar_blue = st.checkbox("Usar Blue")
+    usar_white = st.checkbox("Usar White")
+
+    qtd_leds_por_cor = {}
+    cores_escolhidas = []
+    for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_ambar, usar_rubi, usar_blue, usar_white]):
+        if usar:
+            cores_escolhidas.append(cor)
+            qtd = st.number_input(f"Quantidade de LEDs {cor}", min_value=0, step=1, key=f"qtd_{cor}")
+            qtd_leds_por_cor[cor] = qtd
+
+    num_cores = len(cores_escolhidas)
+    if num_cores == 1:
+        config_led = "Single"
+    elif num_cores == 2:
+        config_led = "Dual"
+    elif num_cores >= 3:
+        config_led = "Tri"
+    else:
+        config_led = None
 
 # Cálculo do custo total
-total = precos_amplificador[amplificador]
-total += qtd_driver * preco_driver
-total += precos_controlador[controlador_tipo]
-if tipo_modulo != "Nenhum":
-    total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
+total = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo]
 
-# Resultado final
-st.subheader(f" 💵 Custo Estimado: R$ {total:.2f}")
+if tipo_modulo != "Nenhum" and tipo_led and config_led:
+    preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led][config_led]
+    total += precos_modulo[tipo_modulo] + preco_led_config
+    for cor, qtd in qtd_leds_por_cor.items():
+        total += qtd * precos_cor_led[cor]
 
-# Rodapé no canto inferior esquerdo
+st.subheader(f"\U0001F4B5 Custo Estimado: R$ {total:.2f}")
+
+# Rodapé
 st.markdown("""
     <style>
     .rodape {
