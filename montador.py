@@ -98,9 +98,9 @@ precos_cor_led = {
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
 if amplificador == "100W":
-    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 1])
+    qtd_driver = st.selectbox("Acompanha driver?:", [Não, Sim])
 elif amplificador == "200W":
-    qtd_driver = st.selectbox("Quantidade de drivers:", [0, 2])
+    qtd_driver = st.selectbox("Acompanha driver?:", [Não, Sim])
 else:
     qtd_driver = 0
 
