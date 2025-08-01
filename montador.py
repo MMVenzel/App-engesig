@@ -27,7 +27,7 @@ def set_background(image_file):
     st.markdown(css, unsafe_allow_html=True)
 
 # Aplica imagem de fundo
-set_background("plano de fundo.jpg")
+set_background("plano_de_fundo.jpg")
 
 # Título
 st.title("Central de Custos | Sinalização")
