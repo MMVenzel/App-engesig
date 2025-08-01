@@ -1,4 +1,3 @@
-"""
 import streamlit as st
 from PIL import Image
 import base64
@@ -129,4 +128,3 @@ if tipo_modulo != "Nenhum":
 # Resultado final
 st.markdown("---")
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
-"""
