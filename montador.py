@@ -70,16 +70,25 @@ precos_controlador = {
     "Controlador Fixo 17B": 1,
 }
 
-precos_modulo_aux = {
-    "Micro Q-Max 3 Leds": 49.97,
-    "Micro D-Max OPT 3 Leds": 68.40,
-    "Micro D-Max Âmbar 3 Leds": 82.45,
-    "Micro D-Max Âmbar 4 Leds": 1, 
-    "Micro D-Max Âmbar 6 Leds": 1,
-    "Micro D-Max Dual Color": 1,
+valores_modulo = {
+    "Nano": 10,
+    "Micro": 20,
+    "D-Max": 30
 }
 
-# Entradas do usuário
+valores_placa_led = {
+    "Q-Max": 1.5,
+    "OPT": 2,
+    "3W": 3
+}
+
+valores_led_cor = {
+    "Q-Max": {"Âmbar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+    "OPT": {"Âmbar": 5, "Rubi": 1, "Blue": 1.5, "White": 3},
+    "3W": {"Âmbar": 5, "Rubi": 1, "Blue": 1.5, "White": 3}
+}
+
+# Entradas principais
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
 if amplificador == "100W":
@@ -88,21 +97,27 @@ if amplificador == "100W":
 elif amplificador == "200W":
     qtd_driver = st.selectbox("Quantidade de drivers:", [0, 2])
     controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
-else:  # Moto
+else:
     qtd_driver = 0
     controlador_tipo = None
 
-# Escolha do tipo de módulo auxiliar (agora vem primeiro)
-tipo_modulo = st.selectbox("Escolha o tipo de módulo auxiliar:", list(precos_modulo_aux.keys()))
-quantidade_modulos = st.number_input("Quantidade de módulos auxiliares:", min_value=0, step=1)
+# Nova estrutura de módulos auxiliares
+st.markdown("### Módulo Auxiliar")
+tipo_modulo = st.selectbox("Tipo de módulo:", list(valores_modulo.keys()))
+tipo_led = st.selectbox("Tipo de LED:", list(valores_placa_led.keys()))
+cor_led = st.selectbox("Cor do LED:", list(valores_led_cor[tipo_led].keys()))
+qtd_leds = st.number_input("Quantidade de LEDs:", min_value=0, step=1)
 
 # Cálculo do custo total
 total = precos_amplificador[amplificador]
 total += qtd_driver * preco_driver
 if controlador_tipo:
     total += precos_controlador[controlador_tipo]
-total += quantidade_modulos * precos_modulo_aux[tipo_modulo]
+
+total += valores_modulo[tipo_modulo]
+total += valores_placa_led[tipo_led]
+total += valores_led_cor[tipo_led][cor_led] * qtd_leds
 
 # Resultado final
 st.markdown("---")
-st.subheader(f" Custo Estimado: R$ {total:.2f}")
+st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
