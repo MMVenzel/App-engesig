@@ -4,28 +4,40 @@ import base64
 
 # Função para aplicar imagem de fundo
 def set_background(image_file):
-    st.markdown("""
+    st.markdown(f"""
     <style>
-    header, footer, .css-18ni7ap.e8zbici2 {visibility: hidden;}
-
-    .stApp {
-        background-image: url("data:image/jpg;base64,{bg}");
+    .stApp {{
+        background-image: url("data:image/jpg;base64,{base64.b64encode(open(image_file, "rb").read()).decode()}");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
         color: white;
-    }
+    }}
 
-    h1, h2, h3, h4, h5, h6, p, label, div {
+    /* Cores globais */
+    h1, h2, h3, h4, h5, h6, p, label, div, span {{
         color: white !important;
-    }
+    }}
 
-    /* Selectbox texto branco */
-    .stSelectbox > div > div > div > div {
+    /* Input geral e select */
+    .stSelectbox div[data-baseweb="select"] * {{
         color: white !important;
-    }
+        background-color: rgba(0, 0, 0, 0.6) !important;
+    }}
+
+    /* Dropdown aberto */
+    div[data-baseweb="popover"] * {{
+        color: white !important;
+        background-color: #333 !important;
+    }}
+
+    /* Texto digitável dentro do select */
+    .stSelectbox input {{
+        color: white !important;
+    }}
+
     </style>
-    """.replace("{bg}", base64.b64encode(open(image_file, "rb").read()).decode()), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Aplica imagem de fundo
 set_background("plano_de_fundo.jpg")
