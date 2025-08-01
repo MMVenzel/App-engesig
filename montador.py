@@ -133,7 +133,7 @@ if tipo_modulo != "Nenhum":
     total += precos_modulo[tipo_modulo] + precos_tipo_led[tipo_led] + (qtd_leds * precos_cor_led[tipo_led][cor_led])
 
 # Resultado final
-st.subheader(f" Custo Estimado: R$ {total:.2f}")
+st.subheader(f" 💵 Custo Estimado: R$ {total:.2f}")
 
 # Rodapé no canto inferior esquerdo (corrigido)
 st.markdown("""
