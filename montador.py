@@ -144,3 +144,41 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 st.subheader(f"💰 Custo Estimado: R$ {total:.2f}")
+# Rodapé
+st.markdown("""
+    <style>
+    .rodape {
+        position: fixed;
+        bottom: 0;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 12px;
+        font-size: 12px;
+        z-index: 9999;
+        border-radius: 4px;
+    }
+    </style>
+    <div class='rodape'>
+        By: Matteo Marques & Matheus Venzel
+    </div>
+""", unsafe_allow_html=True)
+
+# Logo flutuante
+from pathlib import Path
+
+logo_path = Path("logo.png")  # troque pelo nome correto do seu arquivo
+if logo_path.exists():
+    logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
+    st.markdown(f"""
+        <style>
+        .logo-fixa {{
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            z-index: 10000;
+        }}
+        </style>
+        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
+    """, unsafe_allow_html=True)
