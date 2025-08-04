@@ -1,27 +1,24 @@
 import streamlit as st
 from PIL import Image
-import base64
 from pathlib import Path
+import base64
 import matplotlib.pyplot as plt
 import io
+import datetime
+from fpdf import FPDF
 
 # --- CONFIG INICIAL ---
-st.set_page_config(
-    page_title="Engesig | Central de Custos",
-    page_icon="logo_engesig.ico"
-)
+st.set_page_config(page_title="Engesig | Central de Custos", page_icon="logo_engesig.ico")
 
 # --- ESTILO VISUAL ---
 st.markdown("""
     <style>
-    :root {
-        color-scheme: dark;
-    }
+    :root { color-scheme: dark; }
     .stApp {
         background-color: black !important;
         color: white !important;
     }
-    html, body, [class*="css"]  {
+    html, body, [class*="css"] {
         font-family: 'Segoe UI', sans-serif;
         font-size: 16px;
         color: white;
@@ -50,6 +47,12 @@ st.markdown("""
         0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
         70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
         100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
+    .botao-flutuante {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -175,57 +178,8 @@ if total > 0:
     buf = io.BytesIO()
     fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode()
-    st.markdown(f"""
-        <style>
-        .grafico-flutuante {{
-            position: fixed;
-            top: 290px;
-            left: 30px;
-            width: 300px;
-            z-index: 10000;
-            background: none;
-        }}
-        </style>
-        <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
-    """, unsafe_allow_html=True)
 
-# --- RODAPÉ E LOGO ---
-st.markdown("""
-    <style>
-    .rodape {
-        position: fixed;
-        bottom: 0;
-        left: 10px;
-        color: white;
-        font-size: 12px;
-        z-index: 9999;
-    }
-    </style>
-    <div class="rodape">
-        © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
-    </div>
-""", unsafe_allow_html=True)
-
-logo_path = Path("logo.png")
-if logo_path.exists():
-    logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
-    st.markdown(f"""
-        <style>
-        .logo-fixa {{
-            position: fixed;
-            top: 40px;
-            left: 40px;
-            width: 160px;
-            z-index: 10000;
-        }}
-        </style>
-        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
-    """, unsafe_allow_html=True)
-
-from fpdf import FPDF
-import datetime
-
+# --- PDF ---
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valores_modulos,
               valor_total_modulos, total, img_bytes):
@@ -233,62 +187,48 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-
-    # Título
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(200, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
     pdf.set_font("Arial", size=12)
     pdf.ln(5)
-
-    # Data
     data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
     pdf.cell(200, 10, txt=f"Data: {data}", ln=True)
-
-    # Detalhes dos componentes
     pdf.ln(5)
     pdf.cell(200, 10, txt=f"Amplificador: {amplificador} - R$ {valor_amplificador:.2f}", ln=True)
     if qtd_driver:
         pdf.cell(200, 10, txt=f"Driver(s): {qtd_driver} - R$ {valor_driver:.2f}", ln=True)
     pdf.cell(200, 10, txt=f"Controlador: {controlador_tipo} - R$ {valor_controlador:.2f}", ln=True)
-
-    # Módulos Auxiliares
     pdf.ln(5)
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(200, 10, txt="Módulos Auxiliares:", ln=True)
     pdf.set_font("Arial", size=12)
     for idx, valor in enumerate(valores_modulos):
         pdf.cell(200, 10, txt=f"Módulo #{idx+1}: R$ {valor:.2f}", ln=True)
-
     pdf.cell(200, 10, txt=f"Total Módulos: R$ {valor_total_modulos:.2f}", ln=True)
-
-    # Total Geral
     pdf.ln(5)
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
-
-    # Adiciona o gráfico se existir
     if img_bytes:
         img_path = "grafico_temp.png"
         with open(img_path, "wb") as f:
             f.write(img_bytes.getbuffer())
         pdf.image(img_path, x=50, y=None, w=100)
-
     return pdf.output(dest='S').encode('latin-1')
 
-# --- BOTÃO PARA GERAR E BAIXAR PDF ---
+# --- BOTÃO PDF FLUTUANTE ---
 if total > 0:
-    st.markdown("---")
-    st.subheader("📄 Gerar Relatório")
-    if st.button("📄 Gerar Relatório em PDF"):
-        pdf_bytes = gerar_pdf(
-            amplificador, valor_amplificador, qtd_driver, valor_driver,
-            controlador_tipo, valor_controlador, valores_modulos,
-            valor_total_modulos, total, buf
-        )
-        st.download_button(
-            label="📥 Baixar PDF",
-            data=pdf_bytes,
-            file_name="relatorio_custos.pdf",
-            mime='application/pdf'
-        )
-
+    with st.container():
+        st.markdown('<div class="botao-flutuante">', unsafe_allow_html=True)
+        if st.button("📄 Gerar PDF"):
+            pdf_bytes = gerar_pdf(
+                amplificador, valor_amplificador, qtd_driver, valor_driver,
+                controlador_tipo, valor_controlador, valores_modulos,
+                valor_total_modulos, total, buf
+            )
+            st.download_button(
+                label="📥 Baixar PDF",
+                data=pdf_bytes,
+                file_name="relatorio_custos.pdf",
+                mime='application/pdf'
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
