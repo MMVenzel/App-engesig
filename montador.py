@@ -222,3 +222,73 @@ if logo_path.exists():
         </style>
         <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
     """, unsafe_allow_html=True)
+
+from fpdf import FPDF
+import datetime
+
+def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
+              controlador_tipo, valor_controlador, valores_modulos,
+              valor_total_modulos, total, img_bytes):
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Título
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(200, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
+    pdf.set_font("Arial", size=12)
+    pdf.ln(5)
+
+    # Data
+    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    pdf.cell(200, 10, txt=f"Data: {data}", ln=True)
+
+    # Detalhes dos componentes
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Amplificador: {amplificador} - R$ {valor_amplificador:.2f}", ln=True)
+    if qtd_driver:
+        pdf.cell(200, 10, txt=f"Driver(s): {qtd_driver} - R$ {valor_driver:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Controlador: {controlador_tipo} - R$ {valor_controlador:.2f}", ln=True)
+
+    # Módulos Auxiliares
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt="Módulos Auxiliares:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for idx, valor in enumerate(valores_modulos):
+        pdf.cell(200, 10, txt=f"Módulo #{idx+1}: R$ {valor:.2f}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Total Módulos: R$ {valor_total_modulos:.2f}", ln=True)
+
+    # Total Geral
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
+
+    # Adiciona o gráfico se existir
+    if img_bytes:
+        img_path = "grafico_temp.png"
+        with open(img_path, "wb") as f:
+            f.write(img_bytes.getbuffer())
+        pdf.image(img_path, x=50, y=None, w=100)
+
+    return pdf.output(dest='S').encode('latin-1')
+
+# --- BOTÃO PARA GERAR E BAIXAR PDF ---
+if total > 0:
+    st.markdown("---")
+    st.subheader("📄 Gerar Relatório")
+    if st.button("📄 Gerar Relatório em PDF"):
+        pdf_bytes = gerar_pdf(
+            amplificador, valor_amplificador, qtd_driver, valor_driver,
+            controlador_tipo, valor_controlador, valores_modulos,
+            valor_total_modulos, total, buf
+        )
+        st.download_button(
+            label="📥 Baixar PDF",
+            data=pdf_bytes,
+            file_name="relatorio_custos.pdf",
+            mime='application/pdf'
+        )
+
