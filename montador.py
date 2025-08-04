@@ -62,7 +62,7 @@ st.markdown("""
     .download-pdf-flutuante {
         position: fixed;
         top: 340px;
-        right: 30px;
+        right: 300x;
         z-index: 10001;
     }
     /* Corrige visual de botões em qualquer tema */
