@@ -277,14 +277,30 @@ if total > 0:
         st.rerun() # Força o rerom para mostrar o botão de download imediatamente
 
     if st.session_state.pdf_gerado:
+        st.markdown("""
+            <style>
+            .download-pdf-flutuante {
+                position: fixed;
+                bottom: 80px;
+                right: 30px;
+                z-index: 10001;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
+
         st.download_button(
             label="📥 Baixar PDF",
             data=st.session_state.pdf_bytes,
             file_name="relatorio_custos.pdf",
             mime='application/pdf'
         )
-        # Reseta o estado para o botão de "Gerar" reaparecer na próxima interação
-        st.session_state.pdf_gerado = False
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.session_state.pdf_gerado = False  # resetar após o clique
+
 
     st.markdown('</div>', unsafe_allow_html=True)
 
