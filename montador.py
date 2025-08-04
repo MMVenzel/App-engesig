@@ -65,17 +65,27 @@ st.markdown("""
         right: 30px;
         z-index: 10001;
     }
-    /* Corrige visual dos botões mesmo em tema claro */
-button[kind="primary"] {
+    /* Corrige visual de botões em qualquer tema */
+button {
     background-color: #222 !important;
     color: white !important;
-    border: 1px solid #555 !important;
+    border: 1px solid #444 !important;
+    border-radius: 8px !important;
+    padding: 0.5em 1em !important;
     transition: 0.3s ease;
 }
-button[kind="primary"]:hover {
+
+button:hover {
     background-color: #333 !important;
-    color: white !important;
     border: 1px solid white !important;
+    color: white !important;
+}
+
+/* Corrige ícones dentro dos botões */
+button svg {
+    fill: white !important;
+}
+
 }
 
     </style>
