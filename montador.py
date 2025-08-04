@@ -81,6 +81,7 @@ precos_cor_led = {
     "OPT": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60},
     "Q-MAX": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60}
 }
+
 limite_cores = {
     ("Nano", "3W"): 3,
     ("Micro", "3W"): 3,
@@ -91,7 +92,7 @@ limite_cores = {
     ("D-Max", "Q-MAX"): 1
 }
 
-# --- ENTRADAS ---
+# --- INTERFACE ---
 st.title("Central de Custos | Sinalização")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 qtd_driver = 0
@@ -100,7 +101,6 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-# --- MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modulos = st.number_input("Quantas configurações diferentes de módulo auxiliar deseja adicionar?", min_value=0, step=1, value=0)
 
@@ -117,18 +117,13 @@ for i in range(qtd_modulos):
         if tipo_modulo != "Nenhum":
             tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
             tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
+
             max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
+            cor_checks = {}
+            for cor in ["Ambar", "Rubi", "Blue", "White"]:
+                cor_checks[cor] = st.checkbox(f"Usar {cor}", key=f"check_{cor}_{i}")
 
-            col1, col2, col3 = st.columns(3)
-            with col1: usar_ambar = st.checkbox("Usar Ambar", key=f"ambar_{i}")
-            with col2: usar_rubi = st.checkbox("Usar Rubi", key=f"rubi_{i}")
-            with col3: usar_blue = st.checkbox("Usar Blue", key=f"blue_{i}")
-            usar_white = st.checkbox("Usar White", key=f"white_{i}")
-
-            cores_escolhidas = []
-            for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_ambar, usar_rubi, usar_blue, usar_white]):
-                if usar:
-                    cores_escolhidas.append(cor)
+            cores_escolhidas = [cor for cor, check in cor_checks.items() if check]
 
             if len(cores_escolhidas) > max_cores:
                 st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led}' permite no máximo {max_cores} cores.")
@@ -137,14 +132,18 @@ for i in range(qtd_modulos):
                     qtd = st.number_input(f"Quantidade de LEDs {cor} (#{i+1})", min_value=0, step=1, key=f"qtd_{cor}_{i}")
                     qtd_leds_por_cor[cor] = qtd
 
-                config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas)-1] if len(cores_escolhidas) > 0 else "Single"
-                preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
+                if len(cores_escolhidas) == 1:
+                    config_led = "Single"
+                elif len(cores_escolhidas) == 2:
+                    config_led = "Dual"
+                elif len(cores_escolhidas) >= 3:
+                    config_led = "Tri"
+
+                preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, list(precos_tipo_led_config[tipo_modulo][tipo_led].values())[0])
                 valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
-
                 for cor, qtd in qtd_leds_por_cor.items():
-                    cor_led_price = precos_cor_led[tipo_led][cor]
+                    cor_led_price = precos_cor_led[tipo_led][cor] if tipo_led in precos_cor_led else 0
                     valor_modulo_led += qtd * cor_led_price
-
                 valores_modulos.append(valor_modulo_led * qtd_mod)
 
 # --- CÁLCULO FINAL ---
@@ -163,25 +162,25 @@ if total > 0:
     text_colors = []
 
     if valor_amplificador > 0:
-        labels.append("Amplificador")
+        labels.append('Amplificador')
         values.append(valor_amplificador)
         colors.append('#e50914')
-        text_colors.append("white")
+        text_colors.append('white')
     if valor_driver > 0:
-        labels.append("Driver")
+        labels.append('Driver')
         values.append(valor_driver)
         colors.append('#404040')
-        text_colors.append("white")
+        text_colors.append('white')
     if valor_controlador > 0:
-        labels.append("Controlador")
+        labels.append('Controlador')
         values.append(valor_controlador)
         colors.append('#bfbfbf')
-        text_colors.append("white")
+        text_colors.append('white')
     if valor_total_modulos > 0:
-        labels.append("Módulos Aux.")
+        labels.append('Módulos Aux.')
         values.append(valor_total_modulos)
         colors.append('#ffffff')
-        text_colors.append("black")
+        text_colors.append('black')
 
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(
@@ -192,15 +191,17 @@ if total > 0:
         colors=colors,
         textprops={'fontsize': 9}
     )
-    for i, text in enumerate(texts): text.set_color("white")
-    for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
-
+    for i, text in enumerate(texts):
+        text.set_color("white")
+    for i, autotext in enumerate(autotexts):
+        autotext.set_color(text_colors[i])
     ax.axis('equal')
     fig.patch.set_alpha(0)
     buf = io.BytesIO()
     fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
     img_base64 = base64.b64encode(buf.read()).decode()
+
     st.markdown(f"""
         <style>
         .grafico-flutuante {{
@@ -215,7 +216,7 @@ if total > 0:
         <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
-# --- RODAPÉ E LOGO ---
+# --- RODAPÉ ---
 st.markdown("""
     <style>
     .rodape {
@@ -232,6 +233,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+# --- LOGO FLUTUANTE ---
 logo_path = Path("logo.png")
 if logo_path.exists():
     logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
