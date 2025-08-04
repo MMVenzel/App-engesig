@@ -54,7 +54,7 @@ st.markdown("""
         100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
     }
     .botao-pdf-flutuante {
-        position: fixed;
+        position: relative;
         top: 290px;
         right: 300px;
         z-index: 10001;
