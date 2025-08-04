@@ -56,7 +56,7 @@ st.markdown("""
     .botao-pdf-flutuante {
         position: fixed;
         top: 290px;
-        right: 30px;
+        right: 300px;
         z-index: 10001;
     }
     .download-pdf-flutuante {
