@@ -155,7 +155,7 @@ valor_total_modulos = sum(valores_modulos)
 total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# --- GRÁFICO ---
+# --- GRÁFICO COM BORDA ---
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
     if valor_amplificador: labels.append("Amplificador"); values.append(valor_amplificador); colors.append('#e50914'); text_colors.append("white")
@@ -167,6 +167,9 @@ if total > 0:
     wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
     for i, text in enumerate(texts): text.set_color("white")
     for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
+    for w in wedges:
+        w.set_edgecolor("black")
+        w.set_linewidth(1.5)
     ax.axis('equal')
     fig.patch.set_alpha(0)
     buf = io.BytesIO()
