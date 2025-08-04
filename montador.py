@@ -260,19 +260,19 @@ if total > 0:
     if 'pdf_bytes' not in st.session_state:
         st.session_state.pdf_bytes = None
 
-    st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
-    if st.button("📄 Gerar Relatório"):
-        pdf_bytes = gerar_pdf(
-            amplificador, valor_amplificador, qtd_driver, valor_driver,
-            controlador_tipo, valor_controlador, valores_modulos,
-            valor_total_modulos, total, buf
-        )
-        st.session_state.pdf_bytes = pdf_bytes
-        st.session_state.pdf_gerado = True
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    if not st.session_state.pdf_gerado:
+        st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
+        if st.button("📄 Gerar Relatório"):
+            pdf_bytes = gerar_pdf(
+                amplificador, valor_amplificador, qtd_driver, valor_driver,
+                controlador_tipo, valor_controlador, valores_modulos,
+                valor_total_modulos, total, buf
+            )
+            st.session_state.pdf_bytes = pdf_bytes
+            st.session_state.pdf_gerado = True
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.session_state.pdf_gerado:
+    if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
         st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
         st.download_button(
             label="📥 Baixar PDF",
@@ -282,7 +282,7 @@ if total > 0:
             key="download_pdf_botao"
         )
         st.markdown('</div>', unsafe_allow_html=True)
-        st.session_state.pdf_gerado = False
+
 
 # --- RODAPÉ & LOGO FIXA ---
 st.markdown("""
