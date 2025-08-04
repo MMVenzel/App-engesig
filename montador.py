@@ -102,7 +102,7 @@ limite_cores = {
 
 # --- FUNÇÃO PDF ---
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
-              controlador_tipo, valor_controlador, valores_modulos_detalhes,
+              controlador_tipo, valor_controlador, valores_modulos,
               valor_total_modulos, total, img_bytes):
 
     pdf = FPDF()
@@ -131,10 +131,7 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(200, 10, txt="Módulos Auxiliares:", ln=True)
     pdf.set_font("Arial", size=12)
-    # Aqui, vamos precisar passar mais detalhes para a função PDF
-    # Por simplicidade, vamos manter como está no seu código original
-    # (apenas exibindo o valor total por configuração)
-    for idx, valor in enumerate(valores_modulos_detalhes):
+    for idx, valor in enumerate(valores_modulos):
         pdf.cell(200, 10, txt=f"Configuração Módulo #{idx+1}: R$ {valor:.2f}", ln=True)
 
     pdf.cell(200, 10, txt=f"Total Módulos: R$ {valor_total_modulos:.2f}", ln=True)
@@ -145,7 +142,7 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
 
     # Adiciona o gráfico se existir
-    if img_bytes:
+    if img_bytes and img_bytes.getbuffer().nbytes > 0:
         img_path = "grafico_temp.png"
         with open(img_path, "wb") as f:
             f.write(img_bytes.getbuffer())
@@ -218,7 +215,7 @@ total = valor_amplificador + valor_driver + valor_controlador + valor_total_modu
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # --- GRÁFICO ---
-buf = None # Inicializa o buffer
+buf = io.BytesIO() # Inicializa o buffer aqui para garantir que ele sempre exista
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
     if valor_amplificador: labels.append("Amplificador"); values.append(valor_amplificador); colors.append('#e50914'); text_colors.append("white")
@@ -235,10 +232,12 @@ if total > 0:
         w.set_linewidth(1.5)
     ax.axis('equal')
     fig.patch.set_alpha(0)
-    buf = io.BytesIO()
+    
+    # Salva a figura no buffer
     fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
-    img_base64 = base64.b64encode(buf.read()).decode()
+    
+    img_base64 = base64.b64encode(buf.getvalue()).decode()
     st.markdown(f"""
         <style>
         .grafico-flutuante {{
@@ -253,22 +252,42 @@ if total > 0:
         <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
-# --- BOTÃO PARA GERAR E BAIXAR PDF (AGORA FLUTUANTE) ---
+
+# --- BOTÃO PARA GERAR E BAIXAR PDF (FLUTUANTE) ---
 if total > 0:
+    # Envelopa os botões na div flutuante
     st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
-    if st.button("📄 Gerar Relatório em PDF"):
+
+    # O botão de download só é gerado DEPOIS que o botão de gerar é clicado.
+    # Para manter o botão de download no mesmo lugar, criamos um estado de sessão.
+    if 'pdf_gerado' not in st.session_state:
+        st.session_state.pdf_gerado = False
+    
+    if 'pdf_bytes' not in st.session_state:
+        st.session_state.pdf_bytes = None
+
+    if st.button("📄 Gerar Relatório"):
         pdf_bytes = gerar_pdf(
             amplificador, valor_amplificador, qtd_driver, valor_driver,
             controlador_tipo, valor_controlador, valores_modulos,
             valor_total_modulos, total, buf
         )
+        st.session_state.pdf_bytes = pdf_bytes
+        st.session_state.pdf_gerado = True
+        st.rerun() # Força o rerom para mostrar o botão de download imediatamente
+
+    if st.session_state.pdf_gerado:
         st.download_button(
             label="📥 Baixar PDF",
-            data=pdf_bytes,
+            data=st.session_state.pdf_bytes,
             file_name="relatorio_custos.pdf",
             mime='application/pdf'
         )
+        # Reseta o estado para o botão de "Gerar" reaparecer na próxima interação
+        st.session_state.pdf_gerado = False
+
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 # --- RODAPÉ E LOGO ---
 st.markdown("""
