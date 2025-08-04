@@ -53,12 +53,17 @@ st.markdown("""
         70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
         100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
     }
-    /* Estilo para o botão de PDF flutuante */
     .botao-pdf-flutuante {
         position: fixed;
-        bottom: 30px; /* Distância do fundo */
-        right: 30px;  /* Distância da direita */
-        z-index: 10001; /* Garante que fique na camada de cima */
+        bottom: 30px;
+        right: 30px;
+        z-index: 10001;
+    }
+    .download-pdf-flutuante {
+        position: fixed;
+        bottom: 80px;
+        right: 30px;
+        z-index: 10001;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -215,7 +220,7 @@ total = valor_amplificador + valor_driver + valor_controlador + valor_total_modu
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # --- GRÁFICO ---
-buf = io.BytesIO() # Inicializa o buffer aqui para garantir que ele sempre exista
+buf = io.BytesIO()  # Inicializa o buffer aqui para garantir que ele sempre exista
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
     if valor_amplificador: labels.append("Amplificador"); values.append(valor_amplificador); colors.append('#e50914'); text_colors.append("white")
@@ -233,10 +238,9 @@ if total > 0:
     ax.axis('equal')
     fig.patch.set_alpha(0)
     
-    # Salva a figura no buffer
     fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
-    
+
     img_base64 = base64.b64encode(buf.getvalue()).decode()
     st.markdown(f"""
         <style>
@@ -252,17 +256,12 @@ if total > 0:
         <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
-
 # --- BOTÃO PARA GERAR E BAIXAR PDF (FLUTUANTE) ---
 if total > 0:
-    # Envelopa os botões na div flutuante
     st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
 
-    # O botão de download só é gerado DEPOIS que o botão de gerar é clicado.
-    # Para manter o botão de download no mesmo lugar, criamos um estado de sessão.
     if 'pdf_gerado' not in st.session_state:
         st.session_state.pdf_gerado = False
-    
     if 'pdf_bytes' not in st.session_state:
         st.session_state.pdf_bytes = None
 
@@ -274,7 +273,7 @@ if total > 0:
         )
         st.session_state.pdf_bytes = pdf_bytes
         st.session_state.pdf_gerado = True
-        st.rerun() # Força o rerom para mostrar o botão de download imediatamente
+        st.rerun()
 
     if st.session_state.pdf_gerado:
         st.markdown("""
@@ -287,23 +286,17 @@ if total > 0:
             }
             </style>
         """, unsafe_allow_html=True)
-        
         st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
-
         st.download_button(
             label="📥 Baixar PDF",
             data=st.session_state.pdf_bytes,
             file_name="relatorio_custos.pdf",
             mime='application/pdf'
         )
-
         st.markdown('</div>', unsafe_allow_html=True)
-
-        st.session_state.pdf_gerado = False  # resetar após o clique
-
+        st.session_state.pdf_gerado = False
 
     st.markdown('</div>', unsafe_allow_html=True)
-
 
 # --- RODAPÉ E LOGO ---
 st.markdown("""
