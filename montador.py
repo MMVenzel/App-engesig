@@ -65,6 +65,19 @@ st.markdown("""
         right: 30px;
         z-index: 10001;
     }
+    /* Corrige visual dos botões mesmo em tema claro */
+button[kind="primary"] {
+    background-color: #222 !important;
+    color: white !important;
+    border: 1px solid #555 !important;
+    transition: 0.3s ease;
+}
+button[kind="primary"]:hover {
+    background-color: #333 !important;
+    color: white !important;
+    border: 1px solid white !important;
+}
+
     </style>
 """, unsafe_allow_html=True)
 
