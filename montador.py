@@ -55,13 +55,13 @@ st.markdown("""
     }
     .botao-pdf-flutuante {
         position: fixed;
-        bottom: 30px;
+        top: 290px;
         right: 30px;
         z-index: 10001;
     }
     .download-pdf-flutuante {
         position: fixed;
-        bottom: 80px;
+        top: 340px;
         right: 30px;
         z-index: 10001;
     }
@@ -104,7 +104,6 @@ limite_cores = {
     ("D-Max", "OPT"): 2,
     ("D-Max", "Q-MAX"): 1
 }
-
 # --- FUNÇÃO PDF ---
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valores_modulos,
@@ -168,7 +167,6 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modulos = st.number_input("Quantas configurações diferentes de módulo auxiliar deseja adicionar?", min_value=0, step=1, value=0)
 valores_modulos = []
-
 for i in range(qtd_modulos):
     with st.expander(f"Módulo #{i+1}"):
         tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", list(precos_modulo.keys()), key=f"tipo_modulo_{i}")
@@ -220,7 +218,7 @@ total = valor_amplificador + valor_driver + valor_controlador + valor_total_modu
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # --- GRÁFICO ---
-buf = io.BytesIO()  # Inicializa o buffer aqui para garantir que ele sempre exista
+buf = io.BytesIO()
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
     if valor_amplificador: labels.append("Amplificador"); values.append(valor_amplificador); colors.append('#e50914'); text_colors.append("white")
@@ -237,7 +235,6 @@ if total > 0:
         w.set_linewidth(1.5)
     ax.axis('equal')
     fig.patch.set_alpha(0)
-    
     fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
     buf.seek(0)
 
@@ -256,15 +253,14 @@ if total > 0:
         <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
-# --- BOTÃO PARA GERAR E BAIXAR PDF (FLUTUANTE) ---
+# --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
 if total > 0:
-    st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
-
     if 'pdf_gerado' not in st.session_state:
         st.session_state.pdf_gerado = False
     if 'pdf_bytes' not in st.session_state:
         st.session_state.pdf_bytes = None
 
+    st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
     if st.button("📄 Gerar Relatório"):
         pdf_bytes = gerar_pdf(
             amplificador, valor_amplificador, qtd_driver, valor_driver,
@@ -274,31 +270,21 @@ if total > 0:
         st.session_state.pdf_bytes = pdf_bytes
         st.session_state.pdf_gerado = True
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if st.session_state.pdf_gerado:
-        st.markdown("""
-            <style>
-            .download-pdf-flutuante {
-                position: fixed;
-                bottom: 80px;
-                right: 30px;
-                z-index: 10001;
-            }
-            </style>
-        """, unsafe_allow_html=True)
         st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
         st.download_button(
             label="📥 Baixar PDF",
             data=st.session_state.pdf_bytes,
             file_name="relatorio_custos.pdf",
-            mime='application/pdf'
+            mime='application/pdf',
+            key="download_pdf_botao"
         )
         st.markdown('</div>', unsafe_allow_html=True)
         st.session_state.pdf_gerado = False
 
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# --- RODAPÉ E LOGO ---
+# --- RODAPÉ & LOGO FIXA ---
 st.markdown("""
     <style>
     .rodape {
