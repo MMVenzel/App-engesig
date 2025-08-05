@@ -117,8 +117,8 @@ precos_cor_led = {
 limite_cores = {
     ("Nano", "3W"): 3,
     ("Micro", "3W"): 3,
-    ("Micro", "OPT"): 2,
-    ("Micro", "Q-MAX"): 1,
+    ("Micro", "OPT"): 1,  # Mudança: Apenas uma cor pode ser selecionada
+    ("Micro", "Q-MAX"): 1, # Mudança: Apenas uma cor pode ser selecionada
     ("D-Max", "3W"): 3,
     ("D-Max", "OPT"): 2,
     ("D-Max", "Q-MAX"): 1
@@ -195,6 +195,8 @@ for i in range(qtd_modulos):
 
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
         tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
+        
+        # A nova lógica de limite é refletida aqui
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
 
         col1, col2, col3 = st.columns(3)
@@ -218,16 +220,19 @@ for i in range(qtd_modulos):
                 if len(cores_escolhidas) == 1:
                     limite = 9
                 elif len(cores_escolhidas) == 2:
-                    # Alterna os limites para as duas cores
                     if cores_escolhidas.index(cor) == 0:
                         limite = 4
                     else:
                         limite = 3
                 elif len(cores_escolhidas) == 3:
                     limite = 3
-            # --- Fim da lógica de limitação ---
+            # --- Fim da lógica de limitação para Micro 3W ---
             
-            # Mantém a lógica de limite para Nano 3W
+            # Nova lógica para Micro OPT e Micro Q-MAX: limite de 3 LEDs
+            if tipo_modulo == "Micro" and tipo_led in ["OPT", "Q-MAX"]:
+                limite = 3
+
+            # Lógica para Nano 3W
             if tipo_modulo == "Nano" and tipo_led == "3W":
                 limite = 9 if len(cores_escolhidas) == 1 else 3
 
