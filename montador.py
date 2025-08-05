@@ -95,9 +95,8 @@ button svg {
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
 precos_controlador = {
-    "Nenhum": 0, "Micro 3B Moto": 90.98, "Micro 3B C/ Mic": 1, "Micro 4B S/ Mic": 1,
-    "Micro 4B com Mic": 137.32, "Handheld 9B Magnético": 216.44, "Handheld 15B": 194.57,
-    "Handheld 18B": 1, "Controlador Fixo 15B": 1, "Controlador Fixo 17B": 1
+    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36, 
+    "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216,60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
 precos_tipo_led_config = {
@@ -202,12 +201,12 @@ for i in range(qtd_modulos):
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
 
         col1, col2, col3 = st.columns(3)
-        with col1: usar_ambar = st.checkbox("Usar Ambar", key=f"ambar_{i}")
-        with col2: usar_rubi = st.checkbox("Usar Rubi", key=f"rubi_{i}")
+        with col1: usar_amber = st.checkbox("Usar Amber", key=f"amber_{i}")
+        with col2: usar_red = st.checkbox("Usar Red", key=f"red_{i}")
         with col3: usar_blue = st.checkbox("Usar Blue", key=f"blue_{i}")
         usar_white = st.checkbox("Usar White", key=f"white_{i}")
 
-        cores_escolhidas = [cor for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_ambar, usar_rubi, usar_blue, usar_white]) if usar]
+        cores_escolhidas = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
         qtd_leds_por_cor = {}
 
         if len(cores_escolhidas) > max_cores:
