@@ -217,7 +217,7 @@ for i in range(qtd_modulos):
             if tipo_modulo == "Nano" and tipo_led == "3W":
                 limite = 9 if len(cores_escolhidas) == 1 else 3
             else:
-                limite = 3
+                limite = 18
             qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
             qtd_leds_por_cor[cor] = qtd
 
