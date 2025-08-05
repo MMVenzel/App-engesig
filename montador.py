@@ -109,10 +109,11 @@ precos_tipo_led_config = {
         "Q-MAX": {"Single": 9.1},
     }
 }
+# As chaves do dicionário precos_cor_led foram alteradas para "Amber" e "Red"
 precos_cor_led = {
-    "3W": {"Ambar": 5.79, "Rubi": 3.58, "Blue": 3.58, "White": 3.58},
-    "OPT": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60},
-    "Q-MAX": {"Ambar": 1.36, "Rubi": 0.86, "Blue": 1.00, "White": 1.60}
+    "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
+    "OPT": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60},
+    "Q-MAX": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60}
 }
 limite_cores = {
     ("Nano", "3W"): 3,
@@ -198,13 +199,14 @@ for i in range(qtd_modulos):
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
 
         col1, col2, col3 = st.columns(3)
-        with col1: usar_amber = st.checkbox("Usar Ambar", key=f"amber_{i}")
-        with col2: usar_red = st.checkbox("Usar Rubi", key=f"red_{i}")
+        # Nomes dos checkboxes alterados para "Amber" e "Red"
+        with col1: usar_amber = st.checkbox("Usar Amber", key=f"amber_{i}")
+        with col2: usar_red = st.checkbox("Usar Red", key=f"red_{i}")
         with col3: usar_blue = st.checkbox("Usar Blue", key=f"blue_{i}")
         usar_white = st.checkbox("Usar White", key=f"white_{i}")
 
-        # Linha corrigida para usar as chaves corretas do dicionário
-        cores_escolhidas = [cor for cor, usar in zip(["Ambar", "Rubi", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
+        # A lista de cores escolhidas agora usa as chaves corretas "Amber" e "Red" para o cálculo
+        cores_escolhidas = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
         qtd_leds_por_cor = {}
 
         if len(cores_escolhidas) > max_cores:
@@ -224,7 +226,7 @@ for i in range(qtd_modulos):
         valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
 
         for cor, qtd in qtd_leds_por_cor.items():
-            # Acessa a chave correta no dicionário, que agora está alinhada
+            # Acessa a chave correta no dicionário, que agora é "Amber" ou "Red"
             cor_led_price = precos_cor_led[tipo_led][cor]
             valor_modulo_led += qtd * cor_led_price
 
