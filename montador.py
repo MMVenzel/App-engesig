@@ -1,3 +1,24 @@
+Ótimo, vamos continuar aprimorando a lógica de limitação.
+
+Você quer ajustar as regras para o módulo D-Max com os tipos de LED OPT e Q-MAX. As novas regras são:
+
+D-Max + OPT:
+
+Single (1 cor): até 12 LEDs.
+
+Dual (2 cores): até 6 LEDs para cada cor.
+
+D-Max + Q-MAX:
+
+Single (1 cor): até 4 LEDs.
+
+Para implementar isso, a lógica do seu loop for cor in cores_escolhidas: será atualizada novamente para incluir essas novas condições específicas. O restante do código permanecerá o mesmo.
+
+Aqui está o código completo com todas as regras de limitação atualizadas.
+
+Código Completo Corrigido
+Python
+
 import streamlit as st
 from PIL import Image
 import base64
@@ -92,7 +113,7 @@ button svg {
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
 precos_controlador = {
-    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
+    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36, 
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
@@ -213,7 +234,7 @@ for i in range(qtd_modulos):
         for cor in cores_escolhidas:
             limite = 18 # Limite padrão para os demais módulos/LEDs
             
-            # --- Lógica de limitação para Micro 3W (apenas) ---
+            # --- Lógica de limitação para Micro 3W ---
             if tipo_modulo == "Micro" and tipo_led == "3W":
                 if len(cores_escolhidas) == 1:
                     limite = 9
@@ -224,21 +245,26 @@ for i in range(qtd_modulos):
                         limite = 3
                 elif len(cores_escolhidas) == 3:
                     limite = 3
-            # --- Fim da lógica de limitação para Micro 3W ---
-            
-            # Nova lógica para D-Max 3W: limite de 6 LEDs para Dual e Trio, 18 para Single
+            # --- Lógica de limitação para D-Max 3W ---
             elif tipo_modulo == "D-Max" and tipo_led == "3W":
                 if len(cores_escolhidas) == 1:
                     limite = 18
                 elif len(cores_escolhidas) in [2, 3]:
                     limite = 6
-            # --- Fim da lógica de limitação para D-Max 3W ---
-            
-            # Nova lógica para Micro OPT e Micro Q-MAX: limite de 3 LEDs
+            # --- Lógica de limitação para D-Max OPT ---
+            elif tipo_modulo == "D-Max" and tipo_led == "OPT":
+                if len(cores_escolhidas) == 1:
+                    limite = 12
+                elif len(cores_escolhidas) == 2:
+                    limite = 6
+            # --- Lógica de limitação para D-Max Q-MAX ---
+            elif tipo_modulo == "D-Max" and tipo_led == "Q-MAX":
+                if len(cores_escolhidas) == 1:
+                    limite = 4
+            # --- Lógica de limitação para Micro OPT e Micro Q-MAX ---
             elif tipo_modulo == "Micro" and tipo_led in ["OPT", "Q-MAX"]:
                 limite = 3
-
-            # Lógica para Nano 3W
+            # --- Lógica de limitação para Nano 3W ---
             elif tipo_modulo == "Nano" and tipo_led == "3W":
                 limite = 9 if len(cores_escolhidas) == 1 else 3
 
