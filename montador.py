@@ -92,7 +92,7 @@ button svg {
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
 precos_controlador = {
-    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36, 
+    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
@@ -117,8 +117,8 @@ precos_cor_led = {
 limite_cores = {
     ("Nano", "3W"): 3,
     ("Micro", "3W"): 3,
-    ("Micro", "OPT"): 1,  # Mudança: Apenas uma cor pode ser selecionada
-    ("Micro", "Q-MAX"): 1, # Mudança: Apenas uma cor pode ser selecionada
+    ("Micro", "OPT"): 1,
+    ("Micro", "Q-MAX"): 1,
     ("D-Max", "3W"): 3,
     ("D-Max", "OPT"): 2,
     ("D-Max", "Q-MAX"): 1
@@ -195,8 +195,6 @@ for i in range(qtd_modulos):
 
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
         tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
-        
-        # A nova lógica de limite é refletida aqui
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
 
         col1, col2, col3 = st.columns(3)
@@ -228,12 +226,20 @@ for i in range(qtd_modulos):
                     limite = 3
             # --- Fim da lógica de limitação para Micro 3W ---
             
+            # Nova lógica para D-Max 3W: limite de 6 LEDs para Dual e Trio, 18 para Single
+            elif tipo_modulo == "D-Max" and tipo_led == "3W":
+                if len(cores_escolhidas) == 1:
+                    limite = 18
+                elif len(cores_escolhidas) in [2, 3]:
+                    limite = 6
+            # --- Fim da lógica de limitação para D-Max 3W ---
+            
             # Nova lógica para Micro OPT e Micro Q-MAX: limite de 3 LEDs
-            if tipo_modulo == "Micro" and tipo_led in ["OPT", "Q-MAX"]:
+            elif tipo_modulo == "Micro" and tipo_led in ["OPT", "Q-MAX"]:
                 limite = 3
 
             # Lógica para Nano 3W
-            if tipo_modulo == "Nano" and tipo_led == "3W":
+            elif tipo_modulo == "Nano" and tipo_led == "3W":
                 limite = 9 if len(cores_escolhidas) == 1 else 3
 
             qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
