@@ -109,7 +109,6 @@ precos_tipo_led_config = {
         "Q-MAX": {"Single": 9.1},
     }
 }
-# As chaves do dicionário precos_cor_led foram alteradas para "Amber" e "Red"
 precos_cor_led = {
     "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
     "OPT": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60},
@@ -199,13 +198,11 @@ for i in range(qtd_modulos):
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
 
         col1, col2, col3 = st.columns(3)
-        # Nomes dos checkboxes alterados para "Amber" e "Red"
         with col1: usar_amber = st.checkbox("Usar Amber", key=f"amber_{i}")
         with col2: usar_red = st.checkbox("Usar Red", key=f"red_{i}")
         with col3: usar_blue = st.checkbox("Usar Blue", key=f"blue_{i}")
         usar_white = st.checkbox("Usar White", key=f"white_{i}")
 
-        # A lista de cores escolhidas agora usa as chaves corretas "Amber" e "Red" para o cálculo
         cores_escolhidas = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
         qtd_leds_por_cor = {}
 
@@ -214,10 +211,26 @@ for i in range(qtd_modulos):
             continue
 
         for cor in cores_escolhidas:
+            limite = 18 # Limite padrão para os demais módulos/LEDs
+            
+            # --- Lógica de limitação para Micro 3W (apenas) ---
+            if tipo_modulo == "Micro" and tipo_led == "3W":
+                if len(cores_escolhidas) == 1:
+                    limite = 9
+                elif len(cores_escolhidas) == 2:
+                    # Alterna os limites para as duas cores
+                    if cores_escolhidas.index(cor) == 0:
+                        limite = 4
+                    else:
+                        limite = 3
+                elif len(cores_escolhidas) == 3:
+                    limite = 3
+            # --- Fim da lógica de limitação ---
+            
+            # Mantém a lógica de limite para Nano 3W
             if tipo_modulo == "Nano" and tipo_led == "3W":
                 limite = 9 if len(cores_escolhidas) == 1 else 3
-            else:
-                limite = 18
+
             qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
             qtd_leds_por_cor[cor] = qtd
 
@@ -226,7 +239,6 @@ for i in range(qtd_modulos):
         valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
 
         for cor, qtd in qtd_leds_por_cor.items():
-            # Acessa a chave correta no dicionário, que agora é "Amber" ou "Red"
             cor_led_price = precos_cor_led[tipo_led][cor]
             valor_modulo_led += qtd * cor_led_price
 
