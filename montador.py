@@ -13,8 +13,7 @@ st.set_page_config(
     page_icon="logo_engesig.ico"
 )
 
-# --- ESTILO VISUAL (MÉTODO À PROVA DE ERRO) ---
-# Todo o CSS é definido em uma única variável de texto para evitar erros de cópia.
+# --- ESTILO VISUAL ---
 CSS_STYLE = """
 <style>
     :root { color-scheme: dark; }
@@ -46,7 +45,6 @@ CSS_STYLE = """
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
-
 # --- DADOS ---
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
@@ -55,7 +53,10 @@ precos_controlador = {
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69}
-precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 100.00, "Brutale": 100.00}
+
+# ALTERADO CONFORME SUA EXPLICAÇÃO: Preços base do sinalizador atualizados.
+precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 686.00, "Brutale": 608.00}
+
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
@@ -182,16 +183,28 @@ for i in range(qtd_modelos_modulos):
         for cor, qtd in qtd_leds_por_cor.items(): valor_modulo_unidade += qtd * precos_cor_led[tipo_led][cor]
         valores_modulos.append(valor_modulo_unidade * qtd_mod)
 
+# --- SINALIZADOR DE TETO ---
 st.markdown("### 🚨 Sinalizador de Teto")
 sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()), key="sinalizador_tipo_select")
-valor_total_sinalizador_modulos = 0
+
+valor_total_sinalizador = 0
 if sinalizador_tipo != "Nenhum":
-    valor_base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0) + precos_kit_sinalizador.get(sinalizador_tipo, 0)
+    # --- LÓGICA DE CÁLCULO ATUALIZADA CONFORME SUAS INSTRUÇÕES ---
+
+    # 1. Pega apenas o preço base fixo do sinalizador.
+    valor_base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
+    
     tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
     qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0, key="qtd_modelos_sinalizador")
+
+    valor_total_sinalizador_modulos = 0
+    numero_total_de_modulos_sinalizador = 0 # Variável para contar o total de módulos
+
     for j in range(qtd_modelos_sinalizador):
         with st.expander(f"Modelo de Módulo Sinalizador #{j+1}"):
             qtd_mod_sinalizador = st.number_input(f"Quantidade de módulos do modelo #{j+1}", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
+            numero_total_de_modulos_sinalizador += qtd_mod_sinalizador # Soma a quantidade ao total
+            
             max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
             usar_amber_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}")
@@ -199,23 +212,35 @@ if sinalizador_tipo != "Nenhum":
             usar_blue_s = cols_s[2].checkbox("Blue", key=f"blue_s_{j}")
             usar_white_s = cols_s[3].checkbox("White", key=f"white_s_{j}")
             cores_escolhidas_s = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
+            
             if len(cores_escolhidas_s) > max_cores_sinalizador:
                 st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cor(es).")
                 continue
+            
             qtd_leds_por_cor_s = {}
             for cor_s in cores_escolhidas_s:
                 limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_escolhidas_s, cor_s)
                 qtd_s = st.number_input(f"Quantidade de LEDs {cor_s} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
                 qtd_leds_por_cor_s[cor_s] = qtd_s
+            
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
+            
             preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
-            valor_por_modelo_s = precos_modulo["Sinalizador"] + preco_led_config_s
-            for cor, qtd in qtd_leds_por_cor_s.items(): valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
+            
+            # 2. Custo de 1 módulo = Placa + LEDs (sem o preço do módulo vazio).
+            valor_por_modelo_s = preco_led_config_s
+            for cor, qtd in qtd_leds_por_cor_s.items():
+                valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
+            
             valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
-    valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos
-else:
-    valor_total_sinalizador = 0
+            
+    # 3. Custo do kit é calculado com base no número TOTAL de módulos.
+    custo_total_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * numero_total_de_modulos_sinalizador
+    
+    # Preço final é a soma das 3 partes.
+    valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos + custo_total_kit
+
 
 # --- CÁLCULO FINAL E BOTÕES ---
 valor_amplificador = precos_amplificador[amplificador]
