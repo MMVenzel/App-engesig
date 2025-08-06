@@ -44,3 +44,8 @@ st.markdown("""
     header, [data-testid="stHeader"] {
         visibility: hidden;
         height: 0rem;
+        padding: 0rem;
+    }
+    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {
+        animation: pulse 0.6s;
+    }
