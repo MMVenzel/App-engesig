@@ -95,7 +95,7 @@ st.markdown("""
         left: 30px;
     }
     /* NOVO: Corrige o fundo branco do conteúdo do expander */
-    [data-testid="stExpander"] > div {
+    div[data-testid="stExpander"] div {
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
     </style>
@@ -356,98 +356,4 @@ valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
 total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
-st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
-
-# --- GRÁFICO (Seção Corrigida) ---
-buf = io.BytesIO()
-if total > 0:
-    labels, values, colors, text_colors = [], [], [], []
-    if valor_amplificador: labels.append("Amplificador"); values.append(valor_amplificador); colors.append('#e50914'); text_colors.append("white")
-    if valor_driver: labels.append("Driver"); values.append(valor_driver); colors.append('#404040'); text_colors.append("white")
-    if valor_controlador: labels.append("Controlador"); values.append(valor_controlador); colors.append('#bfbfbf'); text_colors.append("white")
-    if valor_total_modulos: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
-    if valor_total_sinalizador: labels.append("Sinalizador de Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
-
-    fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
-    wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
-    for i, text in enumerate(texts): text.set_color("white")
-    for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
-    for w in wedges:
-        w.set_edgecolor("black")
-        w.set_linewidth(1.5)
-    ax.axis('equal')
-    
-    plt.tight_layout()
-    fig.patch.set_alpha(0)
-    fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
-    buf.seek(0)
-
-    img_base64 = base64.b64encode(buf.getvalue()).decode()
-    st.markdown(f"""
-        <img class="grafico-fixo" src="data:image/png;base64,{img_base64}">
-    """, unsafe_allow_html=True)
-
-# --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
-if total > 0:
-    if 'pdf_gerado' not in st.session_state:
-        st.session_state.pdf_gerado = False
-    if 'pdf_bytes' not in st.session_state:
-        st.session_state.pdf_bytes = None
-
-    if not st.session_state.pdf_gerado:
-        st.markdown('<div class="botao-pdf-flutuante">', unsafe_allow_html=True)
-        if st.button("📄 Gerar Relatório"):
-            pdf_bytes = gerar_pdf(
-                amplificador, valor_amplificador, qtd_driver, valor_driver,
-                controlador_tipo, valor_controlador, valores_modulos,
-                valor_total_modulos, sinalizador_tipo, valor_total_sinalizador,
-                total, buf
-            )
-            st.session_state.pdf_bytes = pdf_bytes
-            st.session_state.pdf_gerado = True
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
-        st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
-        st.download_button(
-            label="📥 Baixar PDF",
-            data=st.session_state.pdf_bytes,
-            file_name="relatorio_custos.pdf",
-            mime='application/pdf',
-            key="download_pdf_botao"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
-
-
-# --- RODAPÉ & LOGO FIXA ---
-st.markdown("""
-    <style>
-    .rodape {
-        position: fixed;
-        bottom: 0;
-        left: 10px;
-        color: white;
-        font-size: 12px;
-        z-index: 9999;
-    }
-    </style>
-    <div class="rodape">
-        © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
-    </div>
-""", unsafe_allow_html=True)
-
-logo_path = Path("logo.png")
-if logo_path.exists():
-    logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
-    st.markdown(f"""
-        <style>
-        .logo-fixa {{
-            position: fixed;
-            top: 40px;
-            left: 40px;
-            width: 160px;
-            z-index: 10000;
-        }}
-        </style>
-        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
-    """, unsafe_allow_html=True)
+st
