@@ -31,8 +31,10 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6, p, label, div, span {
         color: white !important;
     }
+    /* Estilo corrigido para incluir as caixas de entrada de número */
     .stSelectbox div[data-baseweb="select"] *,
-    .stSelectbox input, input[type="number"] {
+    .stSelectbox input, input[type="number"], 
+    [data-testid="stNumberInput"] input {
         color: white !important;
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
@@ -183,7 +185,6 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
         pdf.set_font("Arial", 'B', 12)
         pdf.cell(200, 10, txt="Sinalizador de Teto:", ln=True)
         pdf.set_font("Arial", size=12)
-        # Linha corrigida
         pdf.cell(200, 10, txt=f"Tipo: {sinalizador_tipo} - R$ {valor_total_sinalizador:.2f}", ln=True)
 
     # Total Geral
@@ -211,7 +212,6 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 
 # --- MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
-# Chave adicionada aqui para resolver o erro
 qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modelos_modulos_input")
 valores_modulos = []
 for i in range(qtd_modelos_modulos):
