@@ -94,8 +94,8 @@ st.markdown("""
         top: 290px;
         left: 30px;
     }
-    /* NOVO: Corrige o fundo branco do conteúdo do expander */
-    div[data-testid="stExpander"] div {
+    /* NOVO E MAIS ESPECÍFICO: Corrige o fundo branco do conteúdo do expander */
+    [data-testid="stExpanderHeader"] + div {
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
     </style>
