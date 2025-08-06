@@ -66,28 +66,25 @@ st.markdown("""
         z-index: 10001;
     }
     /* Corrige visual de botões em qualquer tema */
-    button {
-        background-color: #222 !important;
-        color: white !important;
-        border: 1px solid #444 !important;
-        border-radius: 8px !important;
-        padding: 0.5em 1em !important;
-        transition: 0.3s ease;
-    }
-    button:hover {
-        background-color: #333 !important;
-        border: 1px solid white !important;
-        color: white !important;
-    }
-    /* Corrige ícones dentro dos botões */
-    button svg {
-        fill: white !important;
-    }
-    /* Classe CSS para o gráfico com tamanho fixo */
-    .grafico-fixo {
-        width: 300px;  /* Largura fixa */
-        height: 300px; /* Altura fixa */
-    }
+button {
+    background-color: #222 !important;
+    color: white !important;
+    border: 1px solid #444 !important;
+    border-radius: 8px !important;
+    padding: 0.5em 1em !important;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background-color: #333 !important;
+    border: 1px solid white !important;
+    color: white !important;
+}
+
+/* Corrige ícones dentro dos botões */
+button svg {
+    fill: white !important;
+}
     </style>
 """, unsafe_allow_html=True)
 
@@ -269,7 +266,7 @@ valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
 total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos
-st.subheader(f"🍆 Custo Estimado: R$ {total:.2f}")
+st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 # --- GRÁFICO ---
 buf = io.BytesIO()
@@ -299,17 +296,12 @@ if total > 0:
             position: fixed;
             top: 290px;
             left: 30px;
+            width: 300px;
             z-index: 10000;
             background: none;
         }}
-        .grafico-flutuante .grafico-fixo {{
-            width: 300px;
-            height: 300px;
-        }}
         </style>
-        <div class="grafico-flutuante">
-            <img class="grafico-fixo" src="data:image/png;base64,{img_base64}">
-        </div>
+        <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
 # --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
