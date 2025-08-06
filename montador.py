@@ -99,3 +99,52 @@ st.markdown("""
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
     </style>
+""", unsafe_allow_html=True)
+
+# --- DADOS ---
+precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
+preco_driver = 319.81
+precos_controlador = {
+    "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
+    "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
+}
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69}
+precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 100.00, "Brutale": 100.00}
+precos_kit_sinalizador = {"Sirius": 3, "Brutale": 7}
+precos_tipo_led_config = {
+    "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
+    "Micro": {
+        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
+        "OPT": {"Single": 13.97},
+        "Q-MAX": {"Single": 7.3},
+    },
+    "D-Max": {
+        "3W": {"Single": 15.2, "Dual": 18.94, "Tri": 23.51},
+        "OPT": {"Single": 15.31},
+        "Q-MAX": {"Single": 9.1},
+    },
+    "Sinalizador": {
+        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
+        "OPT": {"Single": 13.97},
+        "Q-MAX": {"Single": 7.3},
+    }
+}
+precos_cor_led = {
+    "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
+    "OPT": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60},
+    "Q-MAX": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60}
+}
+limite_cores = {
+    ("Nano", "3W"): 3,
+    ("Micro", "3W"): 3,
+    ("Micro", "OPT"): 1,
+    ("Micro", "Q-MAX"): 1,
+    ("D-Max", "3W"): 3,
+    ("D-Max", "OPT"): 2,
+    ("D-Max", "Q-MAX"): 1,
+    ("Sinalizador", "3W"): 3,
+    ("Sinalizador", "OPT"): 1,
+    ("Sinalizador", "Q-MAX"): 1
+}
+# --- FUNÇÃO PDF ---
+def gerar_pdf(amplificador, valor_
