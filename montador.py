@@ -210,14 +210,12 @@ controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_co
 
 # --- MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
-qtd_modulos = st.number_input("Quantas configurações diferentes de módulo auxiliar deseja adicionar?", min_value=0, step=1, value=0)
+qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0)
 valores_modulos = []
-for i in range(qtd_modulos):
-    with st.expander(f"Módulo #{i+1}"):
+for i in range(qtd_modelos_modulos):
+    with st.expander(f"Modelo de Módulo #{i+1}"):
         tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
         qtd_mod = st.number_input(f"Quantidade de módulos do tipo #{i+1}", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
-        if tipo_modulo == "Nenhum":
-            continue
 
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
         tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
@@ -289,7 +287,6 @@ valor_total_sinalizador_modulos = 0
 if sinalizador_tipo != "Nenhum":
     sinalizador_tipo_simples = sinalizador_tipo
     
-    # Tipo de LED agora é selecionado UMA VEZ para todos os módulos
     tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"])
     
     qtd_modulos_sinalizador = st.number_input("Quantos módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modulos_sinalizador")
@@ -298,7 +295,6 @@ if sinalizador_tipo != "Nenhum":
 
     for j in range(qtd_modulos_sinalizador):
         with st.expander(f"Módulo Sinalizador #{j+1}"):
-
             col1_s, col2_s, col3_s = st.columns(3)
             with col1_s: usar_amber_s = st.checkbox("Usar Amber", key=f"amber_s_{j}")
             with col2_s: usar_red_s = st.checkbox("Usar Red", key=f"red_s_{j}")
