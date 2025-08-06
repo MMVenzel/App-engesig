@@ -90,7 +90,7 @@ st.markdown("""
         top: 290px;
         left: 30px;
     }
-    /* NOVO: Seletor mais específico para o conteúdo do expander */
+    /* ADICIONADO: Correção para o fundo branco do conteúdo do expansor */
     div[data-testid="stExpander"] div[role="region"] {
         background-color: rgba(30, 30, 30, 0.7) !important;
     }
@@ -138,19 +138,18 @@ limite_cores = {
 }
 
 # --- FUNÇÕES AUXILIARES ---
-# NOVO: Função centralizada para calcular os limites de quantidade de LEDs
 def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
     """Calcula o número máximo de LEDs permitido com base no módulo, tipo de LED e seleção de cores."""
     num_cores = len(cores_escolhidas)
     
-    limite = 18 # Limite padrão
+    limite = 18
 
     if tipo_modulo == "Micro":
         if tipo_led == "3W":
             if num_cores == 1: limite = 9
             elif num_cores == 2: limite = 4 if cores_escolhidas.index(cor_atual) == 0 else 3
             elif num_cores == 3: limite = 3
-        else: # OPT ou Q-MAX
+        else:
             limite = 3
             
     elif tipo_modulo == "D-Max":
@@ -168,12 +167,11 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
         if tipo_led == "3W":
             if num_cores in [2, 3]: limite = 3
             else: limite = 9
-        else: # OPT ou Q-MAX
+        else:
             limite = 3
 
     return limite
 
-# NOVO: Função de geração de PDF refatorada
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
               sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
@@ -219,11 +217,9 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
 
-    # ALTERADO: Adiciona a imagem diretamente do buffer em memória
     if img_bytes and img_bytes.getbuffer().nbytes > 0:
         pdf.image(img_bytes, x=pdf.get_x() + 45, w=100, title="Distribuição de Custos")
 
-    # ALTERADO: Removido .encode('latin-1'), pois pdf.output() já retorna bytes
     return pdf.output()
 
 # --- ENTRADAS ---
@@ -262,7 +258,6 @@ for i in range(qtd_modelos_modulos):
 
         qtd_leds_por_cor = {}
         for cor in cores_escolhidas:
-            # ALTERADO: Usando a nova função auxiliar para os limites
             limite = calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor)
             qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
             qtd_leds_por_cor[cor] = qtd
@@ -285,7 +280,6 @@ sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_si
 
 valor_total_sinalizador_modulos = 0
 if sinalizador_tipo != "Nenhum":
-    # ALTERADO: Preço base + preço do kit são calculados primeiro e fora do laço
     valor_base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
     valor_base_sinalizador += precos_kit_sinalizador.get(sinalizador_tipo, 0)
 
@@ -311,7 +305,6 @@ if sinalizador_tipo != "Nenhum":
             
             qtd_leds_por_cor_s = {}
             for cor_s in cores_escolhidas_s:
-                # ALTERADO: Usando a nova função auxiliar para os limites
                 limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_escolhidas_s, cor_s)
                 qtd_s = st.number_input(f"Quantidade de LEDs {cor_s} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
                 qtd_leds_por_cor_s[cor_s] = qtd_s
@@ -328,7 +321,6 @@ if sinalizador_tipo != "Nenhum":
             
             valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
 
-    # ALTERADO: O valor final é a soma do valor base (com kit) e o valor dos módulos
     valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos
 else:
     valor_total_sinalizador = 0
@@ -368,7 +360,8 @@ if total > 0:
 
 # --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
 if total > 0:
-    col1, col2 = st.columns(2) # Usando colunas para melhor organização
+    # Usando colunas para melhor organização dos botões
+    col1, col2 = st.columns([1, 1]) 
     with col1:
         if st.button("📄 Gerar Relatório", key="gerar_pdf"):
             pdf_bytes = gerar_pdf(
