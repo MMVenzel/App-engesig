@@ -52,20 +52,17 @@ precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
-precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17} # Removido Sinalizador daqui para evitar confusão
-
-precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 686.00, "Brutale": 608.00}
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
+precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 693.95, "Brutale": 608.00}
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
-
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
     },
     "D-Max": {
-        "3W": {"Single": 15.20, "Dual": 18.94, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
+        "3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
     },
-    # A tabela do Sinalizador não é mais usada para o preço da placa, mas mantida para referência/outros usos
     "Sinalizador": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
     }
@@ -98,7 +95,7 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
     elif tipo_modulo == "Nano" and tipo_led == "3W": limite = 9 if num_cores == 1 else 3
     elif tipo_modulo == "Sinalizador":
         if tipo_led == "3W":
-            if num_cores == 1: limite = 9 # Limite corrigido para single color no sinalizador 3W
+            if num_cores == 1: limite = 9
             elif num_cores in [2, 3]: limite = 3
         else: limite = 3
     return limite
@@ -139,7 +136,7 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
-    if img_bytes and img_bytes.getbuffer().nbytes > 0:
+    if img_bytes and len(img_bytes) > 0:
         pdf.image(img_bytes, x=pdf.get_x() + 45, w=100, type='PNG', title="Distribuição de Custos")
     return pdf.output()
 
@@ -179,7 +176,7 @@ for i in range(qtd_modelos_modulos):
         config_led = "Single"
         if len(cores_escolhidas) > 0: config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas)-1]
         preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
-        valor_modulo_unidade = precos_modulo[tipo_modulo] + preco_led_config
+        valor_modulo_unidade = precos_modulo.get(tipo_modulo, 0) + preco_led_config
         for cor, qtd in qtd_leds_por_cor.items(): valor_modulo_unidade += qtd * precos_cor_led[tipo_led][cor]
         valores_modulos.append(valor_modulo_unidade * qtd_mod)
 
@@ -222,7 +219,6 @@ if sinalizador_tipo != "Nenhum":
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
             
-            # AQUI ESTÁ A CORREÇÃO PRINCIPAL: Usa a tabela de preços do "D-Max" para a placa.
             preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
             
             valor_por_modelo_s = preco_led_config_s
@@ -271,7 +267,7 @@ if total > 0:
             st.session_state.pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valor_total_modulos,
-                sinalizador_tipo, valor_total_sinalizador, total, buf
+                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue() # <-- AQUI ESTÁ A CORREÇÃO
             )
     with col2:
         if st.session_state.pdf_bytes:
