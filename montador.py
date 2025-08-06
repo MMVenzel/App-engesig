@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import io
 from fpdf import FPDF
 import datetime
-import tempfile # <-- IMPORTANTE: Nova biblioteca adicionada
+import tempfile
 
 # --- CONFIG INICIAL ---
 st.set_page_config(
@@ -101,7 +101,6 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
         else: limite = 3
     return limite
 
-# AQUI ESTÁ A FUNÇÃO CORRIGIDA PARA USAR UM ARQUIVO TEMPORÁRIO
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
               sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
@@ -138,15 +137,11 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
-
-    # Lógica robusta com arquivo temporário
     if img_bytes and len(img_bytes) > 0:
         with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as temp_image_file:
             temp_image_file.write(img_bytes)
             temp_image_file.seek(0)
-            # Passa o NOME do arquivo temporário para a função de imagem
             pdf.image(temp_image_file.name, x=pdf.get_x() + 45, w=100)
-            
     return pdf.output()
 
 # --- INTERFACE PRINCIPAL ---
@@ -206,7 +201,6 @@ if sinalizador_tipo != "Nenhum":
         with st.expander(f"Modelo de Módulo Sinalizador #{j+1}"):
             qtd_mod_sinalizador = st.number_input(f"Quantidade de módulos do modelo #{j+1}", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
             numero_total_de_modulos_sinalizador += qtd_mod_sinalizador
-            
             max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
             usar_amber_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}")
@@ -220,19 +214,24 @@ if sinalizador_tipo != "Nenhum":
                 continue
             
             qtd_leds_por_cor_s = {}
+            total_leds_no_modulo = 0
             for cor_s in cores_escolhidas_s:
                 limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_escolhidas_s, cor_s)
                 qtd_s = st.number_input(f"Quantidade de LEDs {cor_s} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
                 qtd_leds_por_cor_s[cor_s] = qtd_s
+                total_leds_no_modulo += qtd_s
             
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
             
             preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
-            
             valor_por_modelo_s = preco_led_config_s
             for cor, qtd in qtd_leds_por_cor_s.items():
                 valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
+            
+            # AQUI ESTÁ A NOVA REGRA DE NEGÓCIO
+            if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
+                valor_por_modelo_s += 10.80
             
             valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
             
