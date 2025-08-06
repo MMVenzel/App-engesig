@@ -1,3 +1,21 @@
+Com certeza. Peço desculpas pela confusão na ordem dos campos. Vamos reestruturar a seção "Sinalizador de Teto" para seguir a sequência que você pediu.
+
+A nova ordem será:
+
+Escolha o tipo de sinalizador (Sirius ou Brutale).
+
+Escolha o tipo de LED (3W, OPT, Q-MAX), que se aplicará a todos os módulos.
+
+Defina a quantidade de módulos.
+
+Configure as cores e a quantidade de LEDs para cada módulo individualmente.
+
+Essa abordagem é mais lógica e alinha a configuração global do sinalizador antes de entrar nos detalhes de cada módulo.
+
+Aqui está o código completo com essa alteração:
+
+Python
+
 import streamlit as st
 from PIL import Image
 import base64
@@ -102,8 +120,8 @@ precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
-precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69} # Preço da placa do sinalizador
-precos_sinalizador_teto = {"Nenhum": 0, "Sirius - 100": 100.00, "Brutale - 100": 100.00}
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69}
+precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 100.00, "Brutale": 100.00}
 precos_kit_sinalizador = {"Sirius": 3, "Brutale": 7}
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
@@ -279,7 +297,7 @@ for i in range(qtd_modulos):
 
         valores_modulos.append(valor_modulo_led * qtd_mod)
 
-# --- SINALIZADOR DE TETO (Nova Seção) ---
+# --- SINALIZADOR DE TETO ---
 st.markdown("### 🚨 Sinalizador de Teto")
 sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()))
 
@@ -287,13 +305,17 @@ valor_total_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
 valor_total_sinalizador_modulos = 0
 
 if sinalizador_tipo != "Nenhum":
-    sinalizador_tipo_simples = sinalizador_tipo.split(' ')[0]
-    qtd_modulos_sinalizador = st.number_input("Quantos módulos de sinalizador deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modulos_sinalizador")
+    sinalizador_tipo_simples = sinalizador_tipo
+    
+    # Tipo de LED agora é selecionado UMA VEZ para todos os módulos
+    tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"])
+    
+    qtd_modulos_sinalizador = st.number_input("Quantos módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modulos_sinalizador")
+
+    max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
 
     for j in range(qtd_modulos_sinalizador):
         with st.expander(f"Módulo Sinalizador #{j+1}"):
-            tipo_led_sinalizador = st.selectbox(f"Tipo de LED do Sinalizador #{j+1}:", ["3W", "OPT", "Q-MAX"], key=f"tipo_led_sinalizador_{j}")
-            max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
 
             col1_s, col2_s, col3_s = st.columns(3)
             with col1_s: usar_amber_s = st.checkbox("Usar Amber", key=f"amber_s_{j}")
