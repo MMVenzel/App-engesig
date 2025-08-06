@@ -31,15 +31,18 @@ st.markdown("""
     h1, h2, h3, h4, h5, h6, p, label, div, span {
         color: white !important;
     }
+    /* ALTERADO PARA PRETO: Caixas de seleção e inputs numéricos */
     .stSelectbox div[data-baseweb="select"] *,
     .stSelectbox input, input[type="number"], 
     [data-testid="stNumberInput"] input {
         color: white !important;
-        background-color: rgba(30, 30, 30, 0.7) !important;
+        background-color: black !important;
+        border: 1px solid #444; /* Adiciona uma borda sutil para melhor visibilidade */
     }
+    /* ALTERADO: Menu dropdown um pouco mais escuro */
     div[data-baseweb="popover"] * {
         color: white !important;
-        background-color: #333 !important;
+        background-color: #222 !important;
     }
     header, [data-testid="stHeader"] {
         visibility: hidden;
@@ -90,9 +93,17 @@ st.markdown("""
         top: 290px;
         left: 30px;
     }
-    /* ADICIONADO: Correção para o fundo branco do conteúdo do expansor */
+    
+    /* ALTERADO PARA PRETO: Fundo da área de conteúdo do expansor */
     div[data-testid="stExpander"] div[role="region"] {
-        background-color: rgba(30, 30, 30, 0.7) !important;
+        background-color: black !important;
+        border: 1px solid #444; /* Adiciona uma borda sutil para consistência */
+        border-top: none; /* Remove a borda de cima que fica colada no header */
+        border-radius: 0 0 8px 8px; /* Arredonda as bordas inferiores */
+    }
+    /* Garante que o contêiner interno não tenha fundo branco */
+    div[data-testid="stExpander"] div[role="region"] > div {
+        background-color: transparent !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -360,10 +371,14 @@ if total > 0:
 
 # --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
 if total > 0:
-    # Usando colunas para melhor organização dos botões
-    col1, col2 = st.columns([1, 1]) 
+    if 'pdf_gerado' not in st.session_state:
+        st.session_state.pdf_gerado = False
+    if 'pdf_bytes' not in st.session_state:
+        st.session_state.pdf_bytes = None
+
+    col1, col2 = st.columns([1, 1])
     with col1:
-        if st.button("📄 Gerar Relatório", key="gerar_pdf"):
+        if st.button("📄 Gerar Relatório"):
             pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valor_total_modulos,
@@ -371,9 +386,10 @@ if total > 0:
             )
             st.session_state.pdf_bytes = pdf_bytes
             st.session_state.pdf_gerado = True
+            st.rerun() 
     
     with col2:
-        if st.session_state.get('pdf_gerado', False):
+        if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
             st.download_button(
                 label="📥 Baixar PDF",
                 data=st.session_state.pdf_bytes,
