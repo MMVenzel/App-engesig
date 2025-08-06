@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import io
 from fpdf import FPDF
 import datetime
+import tempfile # <-- IMPORTANTE: Nova biblioteca adicionada
 
 # --- CONFIG INICIAL ---
 st.set_page_config(
@@ -100,6 +101,7 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
         else: limite = 3
     return limite
 
+# AQUI ESTÁ A FUNÇÃO CORRIGIDA PARA USAR UM ARQUIVO TEMPORÁRIO
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
               sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
@@ -111,7 +113,7 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(0, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
     pdf.ln(5)
     pdf.set_font("Arial", '', 10)
-    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     pdf.cell(0, 8, txt=f"Data de Geração: {data}", ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Arial", 'B', 12)
@@ -136,8 +138,15 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
+
+    # Lógica robusta com arquivo temporário
     if img_bytes and len(img_bytes) > 0:
-        pdf.image(img_bytes, x=pdf.get_x() + 45, w=100, type='PNG', title="Distribuição de Custos")
+        with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as temp_image_file:
+            temp_image_file.write(img_bytes)
+            temp_image_file.seek(0)
+            # Passa o NOME do arquivo temporário para a função de imagem
+            pdf.image(temp_image_file.name, x=pdf.get_x() + 45, w=100)
+            
     return pdf.output()
 
 # --- INTERFACE PRINCIPAL ---
@@ -267,7 +276,7 @@ if total > 0:
             st.session_state.pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valor_total_modulos,
-                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue() # <-- AQUI ESTÁ A CORREÇÃO
+                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
             )
     with col2:
         if st.session_state.pdf_bytes:
