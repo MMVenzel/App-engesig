@@ -52,20 +52,20 @@ precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
-precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69}
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17} # Removido Sinalizador daqui para evitar confusão
 
-# ALTERADO CONFORME SUA EXPLICAÇÃO: Preços base do sinalizador atualizados.
 precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 686.00, "Brutale": 608.00}
-
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
+
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
     },
     "D-Max": {
-        "3W": {"Single": 15.2, "Dual": 18.94, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
+        "3W": {"Single": 15.20, "Dual": 18.94, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
     },
+    # A tabela do Sinalizador não é mais usada para o preço da placa, mas mantida para referência/outros usos
     "Sinalizador": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
     }
@@ -98,8 +98,8 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
     elif tipo_modulo == "Nano" and tipo_led == "3W": limite = 9 if num_cores == 1 else 3
     elif tipo_modulo == "Sinalizador":
         if tipo_led == "3W":
-            if num_cores in [2, 3]: limite = 3
-            else: limite = 9
+            if num_cores == 1: limite = 9 # Limite corrigido para single color no sinalizador 3W
+            elif num_cores in [2, 3]: limite = 3
         else: limite = 3
     return limite
 
@@ -189,21 +189,17 @@ sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_si
 
 valor_total_sinalizador = 0
 if sinalizador_tipo != "Nenhum":
-    # --- LÓGICA DE CÁLCULO ATUALIZADA CONFORME SUAS INSTRUÇÕES ---
-
-    # 1. Pega apenas o preço base fixo do sinalizador.
     valor_base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
-    
     tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
     qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0, key="qtd_modelos_sinalizador")
 
     valor_total_sinalizador_modulos = 0
-    numero_total_de_modulos_sinalizador = 0 # Variável para contar o total de módulos
+    numero_total_de_modulos_sinalizador = 0
 
     for j in range(qtd_modelos_sinalizador):
         with st.expander(f"Modelo de Módulo Sinalizador #{j+1}"):
             qtd_mod_sinalizador = st.number_input(f"Quantidade de módulos do modelo #{j+1}", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
-            numero_total_de_modulos_sinalizador += qtd_mod_sinalizador # Soma a quantidade ao total
+            numero_total_de_modulos_sinalizador += qtd_mod_sinalizador
             
             max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
@@ -226,21 +222,17 @@ if sinalizador_tipo != "Nenhum":
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
             
-            preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+            # AQUI ESTÁ A CORREÇÃO PRINCIPAL: Usa a tabela de preços do "D-Max" para a placa.
+            preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
             
-            # 2. Custo de 1 módulo = Placa + LEDs (sem o preço do módulo vazio).
             valor_por_modelo_s = preco_led_config_s
             for cor, qtd in qtd_leds_por_cor_s.items():
                 valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
             
             valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
             
-    # 3. Custo do kit é calculado com base no número TOTAL de módulos.
     custo_total_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * numero_total_de_modulos_sinalizador
-    
-    # Preço final é a soma das 3 partes.
     valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos + custo_total_kit
-
 
 # --- CÁLCULO FINAL E BOTÕES ---
 valor_amplificador = precos_amplificador[amplificador]
