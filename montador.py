@@ -66,25 +66,32 @@ st.markdown("""
         z-index: 10001;
     }
     /* Corrige visual de botões em qualquer tema */
-button {
-    background-color: #222 !important;
-    color: white !important;
-    border: 1px solid #444 !important;
-    border-radius: 8px !important;
-    padding: 0.5em 1em !important;
-    transition: 0.3s ease;
-}
-
-button:hover {
-    background-color: #333 !important;
-    border: 1px solid white !important;
-    color: white !important;
-}
-
-/* Corrige ícones dentro dos botões */
-button svg {
-    fill: white !important;
-}
+    button {
+        background-color: #222 !important;
+        color: white !important;
+        border: 1px solid #444 !important;
+        border-radius: 8px !important;
+        padding: 0.5em 1em !important;
+        transition: 0.3s ease;
+    }
+    button:hover {
+        background-color: #333 !important;
+        border: 1px solid white !important;
+        color: white !important;
+    }
+    /* Corrige ícones dentro dos botões */
+    button svg {
+        fill: white !important;
+    }
+    /* Apenas define a largura, a altura será ajustada automaticamente */
+    .grafico-fixo {
+        width: 300px;
+        z-index: 10000;
+        background: none;
+        position: fixed;
+        top: 290px;
+        left: 30px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -95,7 +102,9 @@ precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
-precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
+precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17, "Sinalizador": 25.69} # Preço da placa do sinalizador
+precos_sinalizador_teto = {"Sirius - 100": 100.00, "Brutale - 100": 100.00}
+precos_kit_sinalizador = {"Sirius": 3, "Brutale": 7}
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
@@ -107,6 +116,12 @@ precos_tipo_led_config = {
         "3W": {"Single": 15.2, "Dual": 18.94, "Tri": 23.51},
         "OPT": {"Single": 15.31},
         "Q-MAX": {"Single": 9.1},
+    },
+    # Adicionando os mesmos preços de LED para o Sinalizador
+    "Sinalizador": {
+        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
+        "OPT": {"Single": 13.97},
+        "Q-MAX": {"Single": 7.3},
     }
 }
 precos_cor_led = {
@@ -121,12 +136,17 @@ limite_cores = {
     ("Micro", "Q-MAX"): 1,
     ("D-Max", "3W"): 3,
     ("D-Max", "OPT"): 2,
-    ("D-Max", "Q-MAX"): 1
+    ("D-Max", "Q-MAX"): 1,
+    # Limites para o novo Sinalizador
+    ("Sinalizador", "3W"): 3,
+    ("Sinalizador", "OPT"): 1,
+    ("Sinalizador", "Q-MAX"): 1
 }
 # --- FUNÇÃO PDF ---
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valores_modulos,
-              valor_total_modulos, total, img_bytes):
+              valor_total_modulos, sinalizador_tipo, valor_total_sinalizador,
+              total, img_bytes):
 
     pdf = FPDF()
     pdf.add_page()
@@ -159,6 +179,14 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
 
     pdf.cell(200, 10, txt=f"Total Módulos: R$ {valor_total_modulos:.2f}", ln=True)
 
+    # Sinalizador de Teto
+    if valor_total_sinalizador > 0:
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(200, 10, txt="Sinalizador de Teto:", ln=True)
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt=f"Tipo: {sinalizador_tipo} - R$ {valor_total_sinalizador:.2f}", ln=True)
+
     # Total Geral
     pdf.ln(5)
     pdf.set_font("Arial", 'B', 12)
@@ -188,7 +216,7 @@ qtd_modulos = st.number_input("Quantas configurações diferentes de módulo aux
 valores_modulos = []
 for i in range(qtd_modulos):
     with st.expander(f"Módulo #{i+1}"):
-        tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", list(precos_modulo.keys()), key=f"tipo_modulo_{i}")
+        tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
         qtd_mod = st.number_input(f"Quantidade de módulos do tipo #{i+1}", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
         if tipo_modulo == "Nenhum":
             continue
@@ -260,15 +288,75 @@ for i in range(qtd_modulos):
 
         valores_modulos.append(valor_modulo_led * qtd_mod)
 
+# --- SINALIZADOR DE TETO (Nova Seção) ---
+st.markdown("### 🚨 Sinalizador de Teto")
+sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()))
+sinalizador_tipo_simples = sinalizador_tipo.split(' ')[0]
+qtd_modulos_sinalizador = st.number_input("Quantos módulos de sinalizador deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modulos_sinalizador")
+
+valor_total_sinalizador_modulos = 0
+for j in range(qtd_modulos_sinalizador):
+    with st.expander(f"Módulo Sinalizador #{j+1}"):
+        tipo_led_sinalizador = st.selectbox(f"Tipo de LED do Sinalizador #{j+1}:", ["3W", "OPT", "Q-MAX"], key=f"tipo_led_sinalizador_{j}")
+        max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
+
+        col1_s, col2_s, col3_s = st.columns(3)
+        with col1_s: usar_amber_s = st.checkbox("Usar Amber", key=f"amber_s_{j}")
+        with col2_s: usar_red_s = st.checkbox("Usar Red", key=f"red_s_{j}")
+        with col3_s: usar_blue_s = st.checkbox("Usar Blue", key=f"blue_s_{j}")
+        usar_white_s = st.checkbox("Usar White", key=f"white_s_{j}")
+
+        cores_escolhidas_s = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
+        qtd_leds_por_cor_s = {}
+
+        if len(cores_escolhidas_s) > max_cores_sinalizador:
+            st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cores.")
+            continue
+        
+        valor_modulo_sinalizador = 0
+        if tipo_led_sinalizador == "3W":
+            if len(cores_escolhidas_s) == 1:
+                config_led_s = "Single"
+                limite_s = 9
+            elif len(cores_escolhidas_s) == 2:
+                config_led_s = "Dual"
+                limite_s = 3
+            elif len(cores_escolhidas_s) == 3:
+                config_led_s = "Tri"
+                limite_s = 3
+            else:
+                config_led_s = "Single"
+                limite_s = 18
+        else: # OPT e Q-MAX
+            config_led_s = "Single"
+            limite_s = 3
+
+        for cor in cores_escolhidas_s:
+            qtd_s = st.number_input(f"Quantidade de LEDs {cor} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor}_{j}")
+            qtd_leds_por_cor_s[cor] = qtd_s
+            
+        preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+        
+        valor_modulo_sinalizador += precos_modulo["Sinalizador"] + preco_led_config_s
+        for cor, qtd in qtd_leds_por_cor_s.items():
+            cor_led_price = precos_cor_led[tipo_led_sinalizador][cor]
+            valor_modulo_sinalizador += qtd * cor_led_price
+        
+        valor_modulo_sinalizador += precos_kit_sinalizador.get(sinalizador_tipo_simples, 0)
+        valor_total_sinalizador_modulos += valor_modulo_sinalizador
+
+valor_total_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0) + valor_total_sinalizador_modulos
+
+
 # --- CÁLCULO FINAL ---
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
-total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos
+total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
-# --- GRÁFICO ---
+# --- GRÁFICO (Seção Corrigida) ---
 buf = io.BytesIO()
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
@@ -276,6 +364,7 @@ if total > 0:
     if valor_driver: labels.append("Driver"); values.append(valor_driver); colors.append('#404040'); text_colors.append("white")
     if valor_controlador: labels.append("Controlador"); values.append(valor_controlador); colors.append('#bfbfbf'); text_colors.append("white")
     if valor_total_modulos: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
+    if valor_total_sinalizador: labels.append("Sinalizador de Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
 
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
@@ -285,23 +374,15 @@ if total > 0:
         w.set_edgecolor("black")
         w.set_linewidth(1.5)
     ax.axis('equal')
+    
+    plt.tight_layout()
     fig.patch.set_alpha(0)
-    fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
+    fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
     buf.seek(0)
 
     img_base64 = base64.b64encode(buf.getvalue()).decode()
     st.markdown(f"""
-        <style>
-        .grafico-flutuante {{
-            position: fixed;
-            top: 290px;
-            left: 30px;
-            width: 300px;
-            z-index: 10000;
-            background: none;
-        }}
-        </style>
-        <img class="grafico-flutuante" src="data:image/png;base64,{img_base64}">
+        <img class="grafico-fixo" src="data:image/png;base64,{img_base64}">
     """, unsafe_allow_html=True)
 
 # --- BOTÕES FLUTUANTES: GERAR E BAIXAR PDF ---
@@ -317,7 +398,8 @@ if total > 0:
             pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valores_modulos,
-                valor_total_modulos, total, buf
+                valor_total_modulos, sinalizador_tipo, valor_total_sinalizador,
+                total, buf
             )
             st.session_state.pdf_bytes = pdf_bytes
             st.session_state.pdf_gerado = True
