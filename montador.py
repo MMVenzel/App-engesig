@@ -1,21 +1,3 @@
-Com certeza. Peço desculpas pela confusão na ordem dos campos. Vamos reestruturar a seção "Sinalizador de Teto" para seguir a sequência que você pediu.
-
-A nova ordem será:
-
-Escolha o tipo de sinalizador (Sirius ou Brutale).
-
-Escolha o tipo de LED (3W, OPT, Q-MAX), que se aplicará a todos os módulos.
-
-Defina a quantidade de módulos.
-
-Configure as cores e a quantidade de LEDs para cada módulo individualmente.
-
-Essa abordagem é mais lógica e alinha a configuração global do sinalizador antes de entrar nos detalhes de cada módulo.
-
-Aqui está o código completo com essa alteração:
-
-Python
-
 import streamlit as st
 from PIL import Image
 import base64
