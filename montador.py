@@ -408,4 +408,46 @@ if total > 0:
         st.markdown('</div>', unsafe_allow_html=True)
 
     if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
-        st.markdown('<div
+        st.markdown('<div class="download-pdf-flutuante">', unsafe_allow_html=True)
+        st.download_button(
+            label="📥 Baixar PDF",
+            data=st.session_state.pdf_bytes,
+            file_name="relatorio_custos.pdf",
+            mime='application/pdf',
+            key="download_pdf_botao"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# --- RODAPÉ & LOGO FIXA ---
+st.markdown("""
+    <style>
+    .rodape {
+        position: fixed;
+        bottom: 0;
+        left: 10px;
+        color: white;
+        font-size: 12px;
+        z-index: 9999;
+    }
+    </style>
+    <div class="rodape">
+        © 2025 by Engesig. Created by Matteo Marques & Matheus Venzel
+    </div>
+""", unsafe_allow_html=True)
+
+logo_path = Path("logo.png")
+if logo_path.exists():
+    logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
+    st.markdown(f"""
+        <style>
+        .logo-fixa {{
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            width: 160px;
+            z-index: 10000;
+        }}
+        </style>
+        <img class="logo-fixa" src="data:image/png;base64,{logo_base64}">
+    """, unsafe_allow_html=True)
