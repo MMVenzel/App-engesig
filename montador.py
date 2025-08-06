@@ -109,7 +109,7 @@ precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
-        "OPT": {"Single": 13.97},
+        "OPT": {"Single": 13.97}, # Linha corrigida
         "Q-MAX": {"Single": 7.3},
     },
     "D-Max": {
@@ -119,4 +119,167 @@ precos_tipo_led_config = {
     },
     "Sinalizador": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56},
-        "OPT": {"Single": 1
+        "OPT": {"Single": 13.97},
+        "Q-MAX": {"Single": 7.3},
+    }
+}
+precos_cor_led = {
+    "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
+    "OPT": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60},
+    "Q-MAX": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60}
+}
+limite_cores = {
+    ("Nano", "3W"): 3,
+    ("Micro", "3W"): 3,
+    ("Micro", "OPT"): 1,
+    ("Micro", "Q-MAX"): 1,
+    ("D-Max", "3W"): 3,
+    ("D-Max", "OPT"): 2,
+    ("D-Max", "Q-MAX"): 1,
+    ("Sinalizador", "3W"): 3,
+    ("Sinalizador", "OPT"): 1,
+    ("Sinalizador", "Q-MAX"): 1
+}
+# --- FUNÇÃO PDF ---
+def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
+              controlador_tipo, valor_controlador, valores_modulos,
+              valor_total_modulos, sinalizador_tipo, valor_total_sinalizador,
+              total, img_bytes):
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Título
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(200, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
+    pdf.set_font("Arial", size=12)
+    pdf.ln(5)
+
+    # Data
+    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    pdf.cell(200, 10, txt=f"Data: {data}", ln=True)
+
+    # Detalhes dos componentes
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Amplificador: {amplificador} - R$ {valor_amplificador:.2f}", ln=True)
+    if qtd_driver:
+        pdf.cell(200, 10, txt=f"Driver(s): {qtd_driver} - R$ {valor_driver:.2f}", ln=True)
+    pdf.cell(200, 10, txt=f"Controlador: {controlador_tipo} - R$ {valor_controlador:.2f}", ln=True)
+
+    # Módulos Auxiliares
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt="Módulos Auxiliares:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for idx, valor in enumerate(valores_modulos):
+        pdf.cell(200, 10, txt=f"Configuração Módulo #{idx+1}: R$ {valor:.2f}", ln=True)
+
+    pdf.cell(200, 10, txt=f"Total Módulos: R$ {valor_total_modulos:.2f}", ln=True)
+
+    # Sinalizador de Teto
+    if valor_total_sinalizador > 0:
+        pdf.ln(5)
+        pdf.set_font("Arial", 'B', 12)
+        pdf.cell(200, 10, txt="Sinalizador de Teto:", ln=True)
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt=f"Tipo: {sinalizador_tipo} - R$ {valor_total_sinalizador:.2f}", ln=True)
+
+    # Total Geral
+    pdf.ln(5)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(200, 10, txt=f"TOTAL: R$ {total:.2f}", ln=True)
+
+    # Adiciona o gráfico se existir
+    if img_bytes and img_bytes.getbuffer().nbytes > 0:
+        img_path = "grafico_temp.png"
+        with open(img_path, "wb") as f:
+            f.write(img_bytes.getbuffer())
+        pdf.image(img_path, x=50, y=None, w=100)
+
+    return pdf.output(dest='S').encode('latin-1')
+
+# --- ENTRADAS ---
+st.title("Central de Custos | Sinalização")
+amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
+qtd_driver = 0
+if amplificador in ["100W", "200W"]:
+    if st.selectbox("Acompanha driver?", ["Não", "Sim"]) == "Sim":
+        qtd_driver = 1 if amplificador == "100W" else 2
+controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
+
+# --- MÓDULOS AUXILIARES ---
+st.markdown("### 🔧 Módulos Auxiliares")
+# Chave adicionada aqui para resolver o erro
+qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modelos_modulos_input")
+valores_modulos = []
+for i in range(qtd_modelos_modulos):
+    with st.expander(f"Modelo de Módulo #{i+1}"):
+        tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
+        qtd_mod = st.number_input(f"Quantidade de módulos do tipo #{i+1}", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
+
+        tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
+        tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
+        max_cores = limite_cores.get((tipo_modulo, tipo_led), 3)
+
+        col1, col2, col3 = st.columns(3)
+        with col1: usar_amber = st.checkbox("Usar Amber", key=f"amber_{i}")
+        with col2: usar_red = st.checkbox("Usar Red", key=f"red_{i}")
+        with col3: usar_blue = st.checkbox("Usar Blue", key=f"blue_{i}")
+        usar_white = st.checkbox("Usar White", key=f"white_{i}")
+
+        cores_escolhidas = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
+        qtd_leds_por_cor = {}
+
+        if len(cores_escolhidas) > max_cores:
+            st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led}' permite no máximo {max_cores} cores.")
+            continue
+
+        for cor in cores_escolhidas:
+            limite = 18
+            if tipo_modulo == "Micro" and tipo_led == "3W":
+                if len(cores_escolhidas) == 1:
+                    limite = 9
+                elif len(cores_escolhidas) == 2:
+                    if cores_escolhidas.index(cor) == 0:
+                        limite = 4
+                    else:
+                        limite = 3
+                elif len(cores_escolhidas) == 3:
+                    limite = 3
+            elif tipo_modulo == "D-Max" and tipo_led == "3W":
+                if len(cores_escolhidas) == 1:
+                    limite = 18
+                elif len(cores_escolhidas) in [2, 3]:
+                    limite = 6
+            elif tipo_modulo == "D-Max" and tipo_led == "OPT":
+                if len(cores_escolhidas) == 1:
+                    limite = 12
+                elif len(cores_escolhidas) == 2:
+                    limite = 6
+            elif tipo_modulo == "D-Max" and tipo_led == "Q-MAX":
+                if len(cores_escolhidas) == 1:
+                    limite = 4
+            elif tipo_modulo == "Micro" and tipo_led in ["OPT", "Q-MAX"]:
+                limite = 3
+            elif tipo_modulo == "Nano" and tipo_led == "3W":
+                limite = 9 if len(cores_escolhidas) == 1 else 3
+
+            qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
+            qtd_leds_por_cor[cor] = qtd
+
+        config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas)-1] if cores_escolhidas else "Single"
+        preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
+        valor_modulo_led = precos_modulo[tipo_modulo] + preco_led_config
+
+        for cor, qtd in qtd_leds_por_cor.items():
+            cor_led_price = precos_cor_led[tipo_led][cor]
+            valor_modulo_led += qtd * cor_led_price
+
+        valores_modulos.append(valor_modulo_led * qtd_mod)
+
+# --- SINALIZADOR DE TETO ---
+st.markdown("### 🚨 Sinalizador de Teto")
+sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()))
+
+valor_total_sinalizador = precos_sinal
