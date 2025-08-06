@@ -288,57 +288,50 @@ if sinalizador_tipo != "Nenhum":
     sinalizador_tipo_simples = sinalizador_tipo
     
     tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"])
-    
-    qtd_modulos_sinalizador = st.number_input("Quantos módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modulos_sinalizador")
-
     max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
 
-    for j in range(qtd_modulos_sinalizador):
-        with st.expander(f"Módulo Sinalizador #{j+1}"):
-            col1_s, col2_s, col3_s = st.columns(3)
-            with col1_s: usar_amber_s = st.checkbox("Usar Amber", key=f"amber_s_{j}")
-            with col2_s: usar_red_s = st.checkbox("Usar Red", key=f"red_s_{j}")
-            with col3_s: usar_blue_s = st.checkbox("Usar Blue", key=f"blue_s_{j}")
-            usar_white_s = st.checkbox("Usar White", key=f"white_s_{j}")
+    st.markdown("---")
+    st.subheader("Configurar Módulos por Cor")
 
-            cores_escolhidas_s = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
-            qtd_leds_por_cor_s = {}
+    # Módulos configurados por cor (nova lógica)
+    cores_disponiveis = ["Amber", "Red", "Blue", "White"]
+    cores_escolhidas_s = []
+    
+    col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+    with col_c1: usar_amber_s = st.checkbox("Usar Amber", key="amber_s")
+    with col_c2: usar_red_s = st.checkbox("Usar Red", key="red_s")
+    with col_c3: usar_blue_s = st.checkbox("Usar Blue", key="blue_s")
+    with col_c4: usar_white_s = st.checkbox("Usar White", key="white_s")
 
-            if len(cores_escolhidas_s) > max_cores_sinalizador:
-                st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cores.")
-                continue
+    cores_escolhidas_s = [cor for cor, usar in zip(cores_disponiveis, [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
+
+    if len(cores_escolhidas_s) > max_cores_sinalizador:
+        st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cores.")
+    else:
+        for cor in cores_escolhidas_s:
             
-            valor_modulo_sinalizador = 0
+            # A lógica de limite por tipo de LED e número de cores é mantida aqui
+            limite_s = 18
             if tipo_led_sinalizador == "3W":
                 if len(cores_escolhidas_s) == 1:
-                    config_led_s = "Single"
                     limite_s = 9
                 elif len(cores_escolhidas_s) == 2:
-                    config_led_s = "Dual"
                     limite_s = 3
                 elif len(cores_escolhidas_s) == 3:
-                    config_led_s = "Tri"
                     limite_s = 3
-                else:
-                    config_led_s = "Single"
-                    limite_s = 18
             else: # OPT e Q-MAX
-                config_led_s = "Single"
                 limite_s = 3
 
-            for cor in cores_escolhidas_s:
-                qtd_s = st.number_input(f"Quantidade de LEDs {cor} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor}_{j}")
-                qtd_leds_por_cor_s[cor] = qtd_s
-                
-            preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+            qtd_s = st.number_input(f"Quantos módulos de LED {cor}?", min_value=0, step=1, key=f"qtd_s_mod_{cor}")
             
-            valor_modulo_sinalizador += precos_modulo["Sinalizador"] + preco_led_config_s
-            for cor, qtd in qtd_leds_por_cor_s.items():
-                cor_led_price = precos_cor_led[tipo_led_sinalizador][cor]
-                valor_modulo_sinalizador += qtd * cor_led_price
+            # Cálculo do custo total para essa cor
+            preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get("Single", 0)
+            valor_por_modulo_s = precos_modulo["Sinalizador"] + preco_led_config_s
+            valor_por_modulo_s += precos_cor_led[tipo_led_sinalizador][cor] * limite_s # Ajustando para o limite de LEDs por cor
+            valor_por_modulo_s += precos_kit_sinalizador.get(sinalizador_tipo_simples, 0)
             
-            valor_modulo_sinalizador += precos_kit_sinalizador.get(sinalizador_tipo_simples, 0)
-            valor_total_sinalizador_modulos += valor_modulo_sinalizador
+            valor_total_sinalizador_modulos += valor_por_modulo_s * qtd_s
+
 
 valor_total_sinalizador += valor_total_sinalizador_modulos
 
