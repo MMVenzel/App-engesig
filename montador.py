@@ -36,16 +36,15 @@ CSS_STYLE = """
     button:hover { background-color: #333 !important; border: 1px solid white !important; color: white !important; }
     button svg { fill: white !important; }
     
-    /* REGRA MAIS FORTE E DIRETA PARA O GRÁFICO */
-    img.grafico-fixo {
+    /* ESTA É A REGRA QUE FIXA O GRÁFICO NA ESQUERDA */
+    .grafico-fixo {
+        width: 300px;
+        height: 300px;
+        z-index: 10000;
+        background: none;
         position: fixed;
         top: 290px;
         left: 30px;
-        width: 300px !important;
-        height: 300px !important;
-        object-fit: contain;
-        z-index: 10000;
-        background: none;
     }
     
     div[data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
@@ -56,7 +55,7 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    .subtotal-container { text-align: right; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
+    .subtotal-container { text-align: left; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
     .subtotal-container span { color: white; font-size: 1.2rem; margin-left: 10px; }
 </style>
 """
@@ -280,8 +279,8 @@ if total > 0:
         fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
         buf.seek(0)
         img_base64 = base64.b64encode(buf.getvalue()).decode()
-        # MUDANÇA: Exibe a imagem dentro de um div com a classe CSS
-        st.markdown(f'<div class="grafico-fixo"><img src="data:image/png;base64,{img_base64}" style="width: 100%; height: 100%; object-fit: contain;"></div>', unsafe_allow_html=True)
+        # ESTA É A LINHA QUE EXIBE O GRÁFICO USANDO A CLASSE CSS
+        st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
 
     dados_para_pdf = {
         "subtotal_eletronicos": subtotal_eletronicos,
