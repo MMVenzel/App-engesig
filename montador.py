@@ -54,8 +54,11 @@ precos_controlador = {
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
-precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 693.95, "Brutale": 608.00}
+
+# AQUI ESTÃO OS NOVOS VALORES
+precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 634.17, "Brutale": 717.07}
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
+
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
@@ -249,7 +252,6 @@ valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
-# AQUI ESTÁ A CORREÇÃO DO ERRO DE DIGITAÇÃO
 total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
