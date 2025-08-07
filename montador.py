@@ -107,9 +107,10 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
             limite = 3
     return limite
 
+# ALTERAÇÃO 1: A FUNÇÃO VOLTA A USAR O MÉTODO DIRETO EM MEMÓRIA
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
-              sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
+              sinalizador_tipo, valor_total_sinalizador, total, img_buffer): # Parâmetro é o buffer
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -143,17 +144,17 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
-    if img_bytes and len(img_bytes) > 0:
-        with tempfile.NamedTemporaryFile(delete=True, suffix=".png") as temp_image_file:
-            temp_image_file.write(img_bytes)
-            temp_image_file.seek(0)
-            pdf.image(temp_image_file.name, x=pdf.get_x() + 45, w=100)
+    
+    # Lógica em memória, sem arquivo temporário
+    if img_buffer and img_buffer.getbuffer().nbytes > 0:
+        img_buffer.seek(0) # Garante que o buffer está no início
+        pdf.image(img_buffer, x=pdf.get_x() + 45, w=100, type='PNG')
+            
     return pdf.output()
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
 
-# --- SEÇÃO DE SIRENE E CONTROLADOR ---
 st.markdown("### 🔊 Sirene e Controlador")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 qtd_driver = 0
@@ -162,7 +163,6 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-# Cálculo e exibição do subtotal
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
@@ -170,7 +170,6 @@ subtotal_eletronicos = valor_amplificador + valor_driver + valor_controlador
 st.markdown(f'<p class="subtotal-container">Subtotal de Sirene e Controlador: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
-# --- SEÇÃO DE MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modelos_modulos_input")
 valores_modulos = []
@@ -202,13 +201,11 @@ for i in range(qtd_modelos_modulos):
         for cor, qtd in qtd_leds_por_cor.items(): valor_modulo_unidade += qtd * precos_cor_led[tipo_led][cor]
         valores_modulos.append(valor_modulo_unidade * qtd_mod)
 
-# Cálculo e exibição do subtotal
 valor_total_modulos = sum(valores_modulos)
 if qtd_modelos_modulos > 0:
     st.markdown(f'<p class="subtotal-container">Subtotal dos Módulos Auxiliares: <span>R$ {valor_total_modulos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
-# --- SEÇÃO DE SINALIZADOR DE TETO ---
 st.markdown("### 🚨 Sinalizador de Teto")
 sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()), key="sinalizador_tipo_select")
 
@@ -232,11 +229,9 @@ if sinalizador_tipo != "Nenhum":
             usar_blue_s = cols_s[2].checkbox("Blue", key=f"blue_s_{j}")
             usar_white_s = cols_s[3].checkbox("White", key=f"white_s_{j}")
             cores_escolhidas_s = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
-            
             if len(cores_escolhidas_s) > max_cores_sinalizador:
                 st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cor(es).")
                 continue
-            
             qtd_leds_por_cor_s = {}
             total_leds_no_modulo = 0
             for cor_s in cores_escolhidas_s:
@@ -244,28 +239,22 @@ if sinalizador_tipo != "Nenhum":
                 qtd_s = st.number_input(f"Quantidade de LEDs {cor_s} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
                 qtd_leds_por_cor_s[cor_s] = qtd_s
                 total_leds_no_modulo += qtd_s
-            
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
-            
             if tipo_led_sinalizador == "OPT":
                 preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
             else:
                 preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
-            
             valor_por_modelo_s = preco_led_config_s
             for cor, qtd in qtd_leds_por_cor_s.items():
                 valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
-            
             if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
                 valor_por_modelo_s += 10.80
-            
             valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
             
     custo_total_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * numero_total_de_modulos_sinalizador
     valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos + custo_total_kit
 
-# Exibição do subtotal
 if sinalizador_tipo != "Nenhum":
     st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
@@ -280,26 +269,23 @@ if total > 0:
     if subtotal_eletronicos > 0: labels.append("Sirene/Controlador"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
     if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
     if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
-    
-    fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
     if values:
+        fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
         for text in texts: text.set_color("white")
         for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
         for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
-    ax.axis('equal')
-    plt.tight_layout()
-    fig.patch.set_alpha(0)
-    fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
-    buf.seek(0)
-    img_base64 = base64.b64encode(buf.getvalue()).decode()
-    st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
+        ax.axis('equal')
+        plt.tight_layout()
+        fig.patch.set_alpha(0)
+        fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.getvalue()).decode()
+        st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
     
-    # --- LÓGICA DE BOTÕES ATUALIZADA ---
-    if 'pdf_bytes' not in st.session_state:
-        st.session_state.pdf_bytes = None
     if 'pdf_gerado' not in st.session_state:
         st.session_state.pdf_gerado = False
+        st.session_state.pdf_bytes = None
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -307,16 +293,17 @@ if total > 0:
             st.session_state.pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valor_total_modulos,
-                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
+                sinalizador_tipo, valor_total_sinalizador, total, buf # ALTERAÇÃO 2: Passa o buffer
             )
             st.session_state.pdf_gerado = True
+            st.rerun()
 
     with col2:
-        if st.session_state.pdf_gerado:
+        if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
             st.download_button(
                 label="📥 Baixar PDF",
                 data=st.session_state.pdf_bytes,
-                file_name=f"relatorio_custos_{datetime.datetime.now().strftime('%Y%m%d')}.pdf",
+                file_name=f"relatorio_custos_{datetime.datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
                 mime='application/pdf',
                 key="download_pdf_botao"
             )
