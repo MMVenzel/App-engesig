@@ -4,9 +4,10 @@ import base64
 from pathlib import Path
 import matplotlib.pyplot as plt
 import io
-from weasyprint import HTML  # <-- NOVA BIBLIOTECA DE PDF
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.utils import ImageReader
 import datetime
-import os
 
 # --- CONFIGURAÇÃO INICIAL DA PÁGINA ---
 st.set_page_config(
@@ -99,76 +100,61 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas):
         return 3
     return 18
 
-# --- NOVA FUNÇÃO DE PDF USANDO WEASYPRINT (MUITO MAIS ROBUSTA) ---
+# --- NOVA FUNÇÃO DE PDF USANDO REPORTLAB (À PROVA DE FALHAS) ---
 def gerar_pdf(dados_relatorio):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    # --- Título e Data ---
+    p.setFont("Helvetica-Bold", 16)
+    p.drawCentredString(width / 2.0, height - 50, "Relatório de Custo - Sinalização")
+    p.setFont("Helvetica", 10)
     data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    img_bytes = dados_relatorio.get("imagem_bytes")
-    
-    # Converte a imagem em memória para um formato que o HTML entende (base64)
-    imagem_html = ""
-    if img_bytes and len(img_bytes) > 0:
-        img_b64 = base64.b64encode(img_bytes).decode("utf-8")
-        imagem_html = f'<img src="data:image/png;base64,{img_b64}" style="width: 300px; display: block; margin: 20px auto;">'
+    p.drawCentredString(width / 2.0, height - 70, f"Data de Geração: {data}")
 
-    # Monta o relatório como uma página HTML
-    html_string = f"""
-    <html>
-        <head>
-            <meta charset="UTF-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; font-size: 12px; }}
-                h1 {{ text-align: center; color: #333; }}
-                p {{ text-align: center; color: #666; font-size: 10px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                th, td {{ border: 1px solid #ddd; padding: 8px; }}
-                th {{ background-color: #f2f2f2; text-align: left; }}
-                .total td {{ font-weight: bold; font-size: 14px; border-top: 2px solid black; }}
-                .direita {{ text-align: right; }}
-            </style>
-        </head>
-        <body>
-            <h1>Relatório de Custo - Sinalização</h1>
-            <p>Data de Geração: {data}</p>
-            
-            <h2>Resumo dos Componentes</h2>
-            <table>
-                <tr>
-                    <th>Item</th>
-                    <th class="direita">Valor</th>
-                </tr>
-                <tr>
-                    <td>Subtotal Sirene e Controlador</td>
-                    <td class="direita">R$ {dados_relatorio['subtotal_eletronicos']:.2f}</td>
-                </tr>
-                """
+    # --- Resumo dos Componentes ---
+    y = height - 120
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(72, y, "Resumo dos Componentes")
+    p.line(72, y - 5, width - 72, y - 5)
+    y -= 25
+
+    p.setFont("Helvetica", 11)
+    
+    p.drawString(72, y, "Subtotal Sirene e Controlador:")
+    p.drawRightString(width - 72, y, f"R$ {dados_relatorio['subtotal_eletronicos']:.2f}")
+    y -= 20
+    
     if dados_relatorio['valor_total_modulos'] > 0:
-        html_string += f"""
-                <tr>
-                    <td>Subtotal Módulos Auxiliares</td>
-                    <td class="direita">R$ {dados_relatorio['valor_total_modulos']:.2f}</td>
-                </tr>"""
+        p.drawString(72, y, "Subtotal Módulos Auxiliares:")
+        p.drawRightString(width - 72, y, f"R$ {dados_relatorio['valor_total_modulos']:.2f}")
+        y -= 20
+        
     if dados_relatorio['valor_total_sinalizador'] > 0:
-        html_string += f"""
-                <tr>
-                    <td>Subtotal Sinalizador ({dados_relatorio['sinalizador_tipo']})</td>
-                    <td class="direita">R$ {dados_relatorio['valor_total_sinalizador']:.2f}</td>
-                </tr>"""
-    
-    html_string += f"""
-                <tr class="total">
-                    <td>CUSTO TOTAL:</td>
-                    <td class="direita">R$ {dados_relatorio['total']:.2f}</td>
-                </tr>
-            </table>
-            
-            {imagem_html}
-        </body>
-    </html>
-    """
-    
-    # Converte o HTML para PDF e retorna os bytes
-    return HTML(string=html_string).write_pdf()
+        p.drawString(72, y, f"Subtotal Sinalizador ({dados_relatorio['sinalizador_tipo']}):")
+        p.drawRightString(width - 72, y, f"R$ {dados_relatorio['valor_total_sinalizador']:.2f}")
+        y -= 20
 
+    # --- Custo Total ---
+    y -= 10
+    p.line(72, y, width - 72, y)
+    y -= 18
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(72, y, "CUSTO TOTAL:")
+    p.drawRightString(width - 72, y, f"R$ {dados_relatorio['total']:.2f}")
+
+    # --- Imagem ---
+    img_bytes = dados_relatorio.get("imagem_bytes")
+    if img_bytes and len(img_bytes) > 0:
+        pil_image = Image.open(io.BytesIO(img_bytes))
+        p.drawImage(ImageReader(pil_image), x=(width - 300) / 2.0, y=y-250, width=300, height=300, preserveAspectRatio=True, mask='auto')
+
+    p.showPage()
+    p.save()
+    
+    buffer.seek(0)
+    return buffer.getvalue()
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
@@ -190,16 +176,14 @@ qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicio
 valores_modulos = []
 for i in range(qtd_modelos_modulos):
     with st.expander(f"Modelo de Módulo Auxiliar #{i+1}"):
+        # ... (código dos módulos, sem alterações)...
         tipo_modulo = st.selectbox(f"Tipo de módulo:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
         qtd_mod = st.number_input(f"Quantidade de módulos:", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
         tipo_led = st.selectbox(f"Tipo de LED:", tipos_led_disponiveis, key=f"tipo_led_{i}")
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 1)
         cols = st.columns(4)
-        usar_amber = cols[0].checkbox("Amber", key=f"amber_{i}")
-        usar_red = cols[1].checkbox("Red", key=f"red_{i}")
-        usar_blue = cols[2].checkbox("Blue", key=f"blue_{i}")
-        usar_white = cols[3].checkbox("White", key=f"white_{i}")
+        usar_amber, usar_red, usar_blue, usar_white = cols[0].checkbox("Amber", key=f"amber_{i}"), cols[1].checkbox("Red", key=f"red_{i}"), cols[2].checkbox("Blue", key=f"blue_{i}"), cols[3].checkbox("White", key=f"white_{i}")
         cores_escolhidas = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if u]
         if len(cores_escolhidas) > max_cores:
             st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
@@ -226,6 +210,7 @@ sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_si
 
 valor_total_sinalizador = 0
 if sinalizador_tipo != "Nenhum":
+    # ... (código do sinalizador, sem alterações)...
     base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
     tipo_led_sinalizador = st.selectbox("Tipo de LED do Sinalizador:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
     qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0)
@@ -237,10 +222,7 @@ if sinalizador_tipo != "Nenhum":
             total_modulos_sinalizador_count += qtd_mod_sinalizador
             max_cores = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
-            usar_amber_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}")
-            usar_red_s = cols_s[1].checkbox("Red", key=f"red_s_{j}")
-            usar_blue_s = cols_s[2].checkbox("Blue", key=f"blue_s_{j}")
-            usar_white_s = cols_s[3].checkbox("White", key=f"white_s_{j}")
+            usar_amber_s, usar_red_s, usar_blue_s, usar_white_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}"), cols_s[1].checkbox("Red", key=f"red_s_{j}"), cols_s[2].checkbox("Blue", key=f"blue_s_{j}"), cols_s[3].checkbox("White", key=f"white_s_{j}")
             cores_s = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if u]
             if len(cores_s) > max_cores:
                 st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
