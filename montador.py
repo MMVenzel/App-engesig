@@ -111,6 +111,7 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
               sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
+    
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -145,20 +146,20 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
     
-    temp_image_path = None
-    try:
-        if img_bytes and len(img_bytes) > 0:
-            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-            temp_file.write(img_bytes)
-            temp_image_path = temp_file.name
-            temp_file.close()
-            pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
-        pdf_output_bytes = pdf.output()
-    finally:
-        if temp_image_path and os.path.exists(temp_image_path):
-            os.remove(temp_image_path)
-            
-    return pdf_output_bytes
+    # --- TESTE: Bloco da imagem temporariamente desativado para isolar o erro ---
+    # if img_bytes and len(img_bytes) > 0:
+    #     temp_image_path = None
+    #     try:
+    #         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+    #         temp_file.write(img_bytes)
+    #         temp_image_path = temp_file.name
+    #         temp_file.close()
+    #         pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
+    #     finally:
+    #         if temp_image_path and os.path.exists(temp_image_path):
+    #             os.remove(temp_image_path)
+    
+    return pdf.output()
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
@@ -291,7 +292,6 @@ if total > 0:
         img_base64 = base64.b64encode(buf.getvalue()).decode()
         st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
     
-    # --- LÓGICA DE BOTÃO ÚNICO E CONFIÁVEL ---
     st.download_button(
         label="📄 Gerar e Baixar Relatório",
         data=gerar_pdf(
