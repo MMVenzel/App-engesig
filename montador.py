@@ -42,21 +42,8 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    
-    /* NOVO ESTILO PARA SUBTOTAL HORIZONTAL */
-    .subtotal-container {
-        text-align: right;
-        font-size: 1.1rem;
-        font-weight: bold;
-        color: #CCCCCC;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-    .subtotal-container span {
-        color: white;
-        font-size: 1.2rem;
-        margin-left: 10px;
-    }
+    .subtotal-container { text-align: right; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
+    .subtotal-container span { color: white; font-size: 1.2rem; margin-left: 10px; }
 </style>
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
@@ -180,7 +167,6 @@ valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 subtotal_eletronicos = valor_amplificador + valor_driver + valor_controlador
-# MUDANÇA: de st.metric para st.markdown
 st.markdown(f'<p class="subtotal-container">Subtotal de Sirene e Controlador: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -219,7 +205,6 @@ for i in range(qtd_modelos_modulos):
 # Cálculo e exibição do subtotal
 valor_total_modulos = sum(valores_modulos)
 if qtd_modelos_modulos > 0:
-    # MUDANÇA: de st.metric para st.markdown
     st.markdown(f'<p class="subtotal-container">Subtotal dos Módulos Auxiliares: <span>R$ {valor_total_modulos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -282,7 +267,6 @@ if sinalizador_tipo != "Nenhum":
 
 # Exibição do subtotal
 if sinalizador_tipo != "Nenhum":
-    # MUDANÇA: de st.metric para st.markdown
     st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -321,6 +305,7 @@ if total > 0:
                 controlador_tipo, valor_controlador, valor_total_modulos,
                 sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
             )
+            st.rerun() # ADICIONADO PARA ATUALIZAR A INTERFACE E MOSTRAR O BOTÃO DE DOWNLOAD
     with col2:
         if st.session_state.pdf_bytes:
             st.download_button(
