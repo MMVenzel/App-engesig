@@ -9,13 +9,14 @@ import datetime
 import tempfile
 import os
 
-# --- CONFIG INICIAL ---
+# --- CONFIGURAÇÃO INICIAL DA PÁGINA ---
 st.set_page_config(
     page_title="Engesig | Central de Custos",
-    page_icon="logo_engesig.ico"
+    page_icon="logo_engesig.ico",
+    layout="centered"
 )
 
-# --- ESTILO VISUAL ---
+# --- ESTILO VISUAL (CSS) ---
 CSS_STYLE = """
 <style>
     :root { color-scheme: dark; }
@@ -49,7 +50,7 @@ CSS_STYLE = """
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
-# --- DADOS ---
+# --- DADOS E PREÇOS ---
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
 precos_controlador = {
@@ -61,15 +62,9 @@ precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 634.17, "Brutale": 717.07}
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
-    "Micro": {
-        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
-    },
-    "D-Max": {
-        "3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
-    },
-    "Sinalizador": {
-        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 17.09}, "Q-MAX": {"Single": 7.3},
-    }
+    "Micro": {"3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3}},
+    "D-Max": {"3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1}},
+    "Sinalizador": {"3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 17.09}, "Q-MAX": {"Single": 7.3}}
 }
 precos_cor_led = {
     "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
@@ -84,57 +79,51 @@ limite_cores = {
 
 # --- FUNÇÕES AUXILIARES ---
 def texto_para_pdf(texto):
-    """Converte uma string para um formato 100% compatível com FPDF (latin-1) para evitar corrupção de arquivo."""
     return str(texto).encode('latin-1', 'replace').decode('latin-1')
 
-def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
+def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas):
     num_cores = len(cores_escolhidas)
-    limite = 18
     if tipo_modulo == "Micro":
         if tipo_led == "3W":
-            if num_cores == 1: limite = 9
-            elif num_cores == 2: limite = 4 if cores_escolhidas.index(cor_atual) == 0 else 3
-            elif num_cores == 3: limite = 3
-        else: limite = 3
+            if num_cores == 1: return 9
+            elif num_cores == 2: return 4
+            elif num_cores == 3: return 3
+        return 3
     elif tipo_modulo == "D-Max":
-        if tipo_led == "3W": limite = 18 if num_cores == 1 else 6
-        elif tipo_led == "OPT": limite = 12 if num_cores == 1 else 6
-        elif tipo_led == "Q-MAX": limite = 4
-    elif tipo_modulo == "Nano" and tipo_led == "3W": limite = 9 if num_cores == 1 else 3
+        if tipo_led == "3W": return 18 if num_cores == 1 else 6
+        elif tipo_led == "OPT": return 12 if num_cores == 1 else 6
+        elif tipo_led == "Q-MAX": return 4
+    elif tipo_modulo == "Nano" and tipo_led == "3W": return 9 if num_cores == 1 else 3
     elif tipo_modulo == "Sinalizador":
         if tipo_led == "3W":
-            if num_cores == 1: limite = 9
-            elif num_cores == 2: limite = 6
-            elif num_cores == 3: limite = 3
-        elif tipo_led == "OPT":
-            limite = 4
-        else: # Q-MAX
-            limite = 3
-    return limite
+            if num_cores == 1: return 9
+            elif num_cores == 2: return 6
+            elif num_cores == 3: return 3
+        elif tipo_led == "OPT": return 4
+        return 3
+    return 18
 
-# --- NOVA FUNÇÃO DE PDF, REESCRITA DO ZERO E À PROVA DE ERROS ---
 def gerar_pdf(dados_relatorio):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
 
-    # Título e Data
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(0, 10, txt=texto_para_pdf("Relatório de Custo - Sinalização"), ln=True, align='C')
     pdf.ln(5)
     pdf.set_font("Arial", '', 10)
-    data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    
+    # AQUI ESTAVA O ERRO: Faltava um ".datetime"
+    data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     pdf.cell(0, 8, txt=texto_para_pdf(f"Data de Geração: {data}"), ln=True, align='C')
     pdf.ln(10)
 
-    # Resumo dos Componentes
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(0, 10, txt=texto_para_pdf("Resumo dos Componentes"), ln=True, border='B')
     pdf.set_font("Arial", size=11)
     pdf.ln(4)
     
-    # Detalhes dos custos
     pdf.cell(100, 8, txt=texto_para_pdf("Subtotal Sirene e Controlador:"), ln=0)
     pdf.cell(0, 8, txt=f"R$ {dados_relatorio['subtotal_eletronicos']:.2f}", ln=1, align='R')
     if dados_relatorio['valor_total_modulos'] > 0:
@@ -145,13 +134,11 @@ def gerar_pdf(dados_relatorio):
         pdf.cell(0, 8, txt=f"R$ {dados_relatorio['valor_total_sinalizador']:.2f}", ln=1, align='R')
     pdf.ln(5)
 
-    # Custo Total
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(100, 10, txt=texto_para_pdf("CUSTO TOTAL:"), ln=0)
     pdf.cell(0, 10, txt=f"R$ {dados_relatorio['total']:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
 
-    # Inserção da Imagem (Método Seguro com Arquivo Temporário)
     img_bytes = dados_relatorio.get("imagem_bytes")
     temp_image_path = None
     try:
@@ -161,7 +148,6 @@ def gerar_pdf(dados_relatorio):
             temp_file.write(img_bytes)
             temp_file.close()
             pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
-        
         return pdf.output()
     finally:
         if temp_image_path and os.path.exists(temp_image_path):
@@ -178,43 +164,40 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-valor_amplificador = precos_amplificador[amplificador]
-valor_driver = qtd_driver * preco_driver
-valor_controlador = precos_controlador[controlador_tipo]
-subtotal_eletronicos = valor_amplificador + valor_driver + valor_controlador
+subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo]
 st.markdown(f'<p class="subtotal-container">Subtotal de Sirene e Controlador: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 st.markdown("### 🔧 Módulos Auxiliares")
-qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0, key="qtd_modelos_modulos_input")
+qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0)
 valores_modulos = []
 for i in range(qtd_modelos_modulos):
     with st.expander(f"Modelo de Módulo Auxiliar #{i+1}"):
-        tipo_modulo = st.selectbox(f"Tipo de módulo #{i+1}:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
-        qtd_mod = st.number_input(f"Quantidade de módulos do tipo #{i+1}", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
+        tipo_modulo = st.selectbox(f"Tipo de módulo:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
+        qtd_mod = st.number_input(f"Quantidade de módulos:", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
-        tipo_led = st.selectbox(f"Tipo de LED #{i+1}:", tipos_led_disponiveis, key=f"tipo_led_{i}")
+        tipo_led = st.selectbox(f"Tipo de LED:", tipos_led_disponiveis, key=f"tipo_led_{i}")
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 1)
         cols = st.columns(4)
         usar_amber = cols[0].checkbox("Amber", key=f"amber_{i}")
         usar_red = cols[1].checkbox("Red", key=f"red_{i}")
         usar_blue = cols[2].checkbox("Blue", key=f"blue_{i}")
         usar_white = cols[3].checkbox("White", key=f"white_{i}")
-        cores_escolhidas = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if usar]
+        cores_escolhidas = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if u]
         if len(cores_escolhidas) > max_cores:
-            st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led}' permite no máximo {max_cores} cor(es).")
+            st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
             continue
         qtd_leds_por_cor = {}
         for cor in cores_escolhidas:
-            limite = calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor)
-            qtd = st.number_input(f"Quantidade de LEDs {cor} (máx {limite})", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
+            limite = calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas)
+            qtd = st.number_input(f"Qtd LEDs {cor} (máx {limite}):", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
             qtd_leds_por_cor[cor] = qtd
         config_led = "Single"
-        if len(cores_escolhidas) > 0: config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas)-1]
-        preco_led_config = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
-        valor_modulo_unidade = precos_modulo.get(tipo_modulo, 0) + preco_led_config
-        for cor, qtd in qtd_leds_por_cor.items(): valor_modulo_unidade += qtd * precos_cor_led[tipo_led][cor]
-        valores_modulos.append(valor_modulo_unidade * qtd_mod)
+        if len(cores_escolhidas) > 0: config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas) - 1]
+        preco_placa = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
+        preco_base_mod = precos_modulo.get(tipo_modulo, 0)
+        preco_leds = sum(qtd * precos_cor_led[tipo_led][cor] for cor, qtd in qtd_leds_por_cor.items())
+        valores_modulos.append((preco_base_mod + preco_placa + preco_leds) * qtd_mod)
 
 valor_total_modulos = sum(valores_modulos)
 if qtd_modelos_modulos > 0:
@@ -222,50 +205,49 @@ if qtd_modelos_modulos > 0:
 st.markdown("---")
 
 st.markdown("### 🚨 Sinalizador de Teto")
-sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()), key="sinalizador_tipo_select")
+sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()))
 
 valor_total_sinalizador = 0
 if sinalizador_tipo != "Nenhum":
-    valor_base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
-    tipo_led_sinalizador = st.selectbox("Tipo de LED:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
-    qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0, key="qtd_modelos_sinalizador")
-    valor_total_sinalizador_modulos = 0
-    numero_total_de_modulos_sinalizador = 0
+    base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
+    tipo_led_sinalizador = st.selectbox("Tipo de LED do Sinalizador:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
+    qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0)
+    modulos_sinalizador = 0
+    total_modulos_sinalizador_count = 0
     for j in range(qtd_modelos_sinalizador):
         with st.expander(f"Modelo de Módulo Sinalizador #{j+1}"):
-            qtd_mod_sinalizador = st.number_input(f"Quantidade de módulos do modelo #{j+1}", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
-            numero_total_de_modulos_sinalizador += qtd_mod_sinalizador
-            max_cores_sinalizador = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
+            qtd_mod_sinalizador = st.number_input(f"Qtd de módulos do modelo:", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
+            total_modulos_sinalizador_count += qtd_mod_sinalizador
+            max_cores = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
             usar_amber_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}")
             usar_red_s = cols_s[1].checkbox("Red", key=f"red_s_{j}")
             usar_blue_s = cols_s[2].checkbox("Blue", key=f"blue_s_{j}")
             usar_white_s = cols_s[3].checkbox("White", key=f"white_s_{j}")
-            cores_escolhidas_s = [cor for cor, usar in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if usar]
-            if len(cores_escolhidas_s) > max_cores_sinalizador:
-                st.error(f"⚠️ Este tipo de módulo com LED '{tipo_led_sinalizador}' permite no máximo {max_cores_sinalizador} cor(es).")
+            cores_s = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if u]
+            if len(cores_s) > max_cores:
+                st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
                 continue
-            qtd_leds_por_cor_s = {}
+            leds_s = {}
             total_leds_no_modulo = 0
-            for cor_s in cores_escolhidas_s:
-                limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_escolhidas_s, cor_s)
-                qtd_s = st.number_input(f"Quantidade de LEDs {cor_s} (máx {limite_s})", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
-                qtd_leds_por_cor_s[cor_s] = qtd_s
+            for cor_s in cores_s:
+                limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_s)
+                qtd_s = st.number_input(f"Qtd LEDs {cor_s} (máx {limite_s}):", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
+                leds_s[cor_s] = qtd_s
                 total_leds_no_modulo += qtd_s
             config_led_s = "Single"
-            if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
+            if len(cores_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_s) - 1]
             if tipo_led_sinalizador == "OPT":
-                preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+                preco_placa_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
             else:
-                preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
-            valor_por_modelo_s = preco_led_config_s
-            for cor, qtd in qtd_leds_por_cor_s.items():
-                valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
+                preco_placa_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
+            preco_leds_s = sum(qtd * precos_cor_led[tipo_led_sinalizador][cor] for cor, qtd in leds_s.items())
+            valor_por_modelo_s = preco_placa_s + preco_leds_s
             if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
                 valor_por_modelo_s += 10.80
-            valor_total_sinalizador_modulos += valor_por_modelo_s * qtd_mod_sinalizador
-    custo_total_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * numero_total_de_modulos_sinalizador
-    valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos + custo_total_kit
+            modulos_sinalizador += valor_por_modelo_s * qtd_mod_sinalizador
+    custo_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * total_modulos_sinalizador_count
+    valor_total_sinalizador = base_sinalizador + modulos_sinalizador + custo_kit
 
 if sinalizador_tipo != "Nenhum":
     st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
@@ -275,8 +257,8 @@ st.markdown("---")
 total = subtotal_eletronicos + valor_total_modulos + valor_total_sinalizador
 st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
 
-buf = io.BytesIO()
 if total > 0:
+    buf = io.BytesIO()
     labels, values, colors, text_colors = [], [], [], []
     if subtotal_eletronicos > 0: labels.append("Sirene/Controlador"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
     if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
@@ -295,14 +277,8 @@ if total > 0:
         img_base64 = base64.b64encode(buf.getvalue()).decode()
         st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
 
-    # --- BOTÃO ÚNICO E CONFIÁVEL DE DOWNLOAD ---
     dados_para_pdf = {
-        "amplificador": amplificador,
-        "valor_amplificador": valor_amplificador,
-        "qtd_driver": qtd_driver,
-        "valor_driver": valor_driver,
-        "controlador_tipo": controlador_tipo,
-        "valor_controlador": valor_controlador,
+        "subtotal_eletronicos": subtotal_eletronicos,
         "valor_total_modulos": valor_total_modulos,
         "sinalizador_tipo": sinalizador_tipo,
         "valor_total_sinalizador": valor_total_sinalizador,
@@ -313,7 +289,7 @@ if total > 0:
     st.download_button(
         label="📄 Gerar e Baixar Relatório",
         data=gerar_pdf(dados_para_pdf),
-        file_name=f"relatorio_custos_{datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
+        file_name=f"relatorio_custos_{datetime.datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
         mime='application/pdf'
     )
 
