@@ -43,9 +43,19 @@ CSS_STYLE = """
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
     
-    /* NOVA REGRA PARA DIMINUIR O VALOR DO SUBTOTAL */
-    div[data-testid="stMetricValue"] {
-        font-size: 1.75rem !important;
+    /* NOVO ESTILO PARA SUBTOTAL HORIZONTAL */
+    .subtotal-container {
+        text-align: right;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #CCCCCC;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .subtotal-container span {
+        color: white;
+        font-size: 1.2rem;
+        margin-left: 10px;
     }
 </style>
 """
@@ -170,7 +180,8 @@ valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 subtotal_eletronicos = valor_amplificador + valor_driver + valor_controlador
-st.metric(label="Subtotal de Sirene e Controlador", value=f"R$ {subtotal_eletronicos:.2f}")
+# MUDANÇA: de st.metric para st.markdown
+st.markdown(f'<p class="subtotal-container">Subtotal de Sirene e Controlador: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 # --- SEÇÃO DE MÓDULOS AUXILIARES ---
@@ -208,7 +219,8 @@ for i in range(qtd_modelos_modulos):
 # Cálculo e exibição do subtotal
 valor_total_modulos = sum(valores_modulos)
 if qtd_modelos_modulos > 0:
-    st.metric(label="Subtotal dos Módulos Auxiliares", value=f"R$ {valor_total_modulos:.2f}")
+    # MUDANÇA: de st.metric para st.markdown
+    st.markdown(f'<p class="subtotal-container">Subtotal dos Módulos Auxiliares: <span>R$ {valor_total_modulos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 # --- SEÇÃO DE SINALIZADOR DE TETO ---
@@ -270,7 +282,8 @@ if sinalizador_tipo != "Nenhum":
 
 # Exibição do subtotal
 if sinalizador_tipo != "Nenhum":
-    st.metric(label="Subtotal do Sinalizador de Teto", value=f"R$ {valor_total_sinalizador:.2f}")
+    # MUDANÇA: de st.metric para st.markdown
+    st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 # --- CÁLCULO FINAL E BOTÕES ---
