@@ -83,6 +83,10 @@ limite_cores = {
 }
 
 # --- FUNÇÕES AUXILIARES ---
+def texto_para_pdf(texto):
+    """Converte uma string para um formato 100% compatível com FPDF (latin-1)."""
+    return str(texto).encode('latin-1', 'replace').decode('latin-1')
+
 def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
     num_cores = len(cores_escolhidas)
     limite = 18
@@ -116,50 +120,55 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
+
+    # Adicionando texto ao PDF usando a função de limpeza
     pdf.set_font("Arial", 'B', 16)
-    pdf.cell(0, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
+    pdf.cell(0, 10, txt=texto_para_pdf("Relatório de Custo - Sinalização"), ln=True, align='C')
     pdf.ln(5)
     pdf.set_font("Arial", '', 10)
     data = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    pdf.cell(0, 8, txt=f"Data de Geração: {data}", ln=True, align='C')
+    pdf.cell(0, 8, txt=texto_para_pdf(f"Data de Geração: {data}"), ln=True, align='C')
     pdf.ln(10)
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, txt="Resumo dos Componentes", ln=True, border='B')
+    pdf.cell(0, 10, txt=texto_para_pdf("Resumo dos Componentes"), ln=True, border='B')
     pdf.set_font("Arial", size=11)
     pdf.ln(4)
-    pdf.cell(100, 8, txt=f"Amplificador: {amplificador}", ln=0)
+    pdf.cell(100, 8, txt=texto_para_pdf(f"Amplificador: {amplificador}"), ln=0)
     pdf.cell(0, 8, txt=f"R$ {valor_amplificador:.2f}", ln=1, align='R')
     if qtd_driver:
-        pdf.cell(100, 8, txt=f"Driver(s): {qtd_driver}x", ln=0)
+        pdf.cell(100, 8, txt=texto_para_pdf(f"Driver(s): {qtd_driver}x"), ln=0)
         pdf.cell(0, 8, txt=f"R$ {valor_driver:.2f}", ln=1, align='R')
-    pdf.cell(100, 8, txt=f"Controlador: {controlador_tipo}", ln=0)
+    pdf.cell(100, 8, txt=texto_para_pdf(f"Controlador: {controlador_tipo}"), ln=0)
     pdf.cell(0, 8, txt=f"R$ {valor_controlador:.2f}", ln=1, align='R')
     if valor_total_modulos > 0:
-        pdf.cell(100, 8, txt="Total Módulos Auxiliares:", ln=0)
+        pdf.cell(100, 8, txt=texto_para_pdf("Total Módulos Auxiliares:"), ln=0)
         pdf.cell(0, 8, txt=f"R$ {valor_total_modulos:.2f}", ln=1, align='R')
     if valor_total_sinalizador > 0:
-        pdf.cell(100, 8, txt=f"Sinalizador de Teto ({sinalizador_tipo}):", ln=0)
+        pdf.cell(100, 8, txt=texto_para_pdf(f"Sinalizador de Teto ({sinalizador_tipo}):"), ln=0)
         pdf.cell(0, 8, txt=f"R$ {valor_total_sinalizador:.2f}", ln=1, align='R')
     pdf.ln(5)
     pdf.set_font("Arial", 'B', 14)
-    pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
+    pdf.cell(100, 10, txt=texto_para_pdf("CUSTO TOTAL:"), ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
     
-    # --- TESTE: Bloco da imagem temporariamente desativado para isolar o erro ---
-    # if img_bytes and len(img_bytes) > 0:
-    #     temp_image_path = None
-    #     try:
-    #         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-    #         temp_file.write(img_bytes)
-    #         temp_image_path = temp_file.name
-    #         temp_file.close()
-    #         pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
-    #     finally:
-    #         if temp_image_path and os.path.exists(temp_image_path):
-    #             os.remove(temp_image_path)
-    
-    return pdf.output()
+    temp_image_path = None
+    try:
+        # Reativando a lógica robusta com arquivo temporário para a imagem
+        if img_bytes and len(img_bytes) > 0:
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            temp_file.write(img_bytes)
+            temp_image_path = temp_file.name
+            temp_file.close()
+            pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
+
+        pdf_output_bytes = pdf.output()
+    finally:
+        # Garante que o arquivo temporário seja apagado
+        if temp_image_path and os.path.exists(temp_image_path):
+            os.remove(temp_image_path)
+            
+    return pdf_output_bytes
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
