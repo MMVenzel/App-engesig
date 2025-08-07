@@ -23,8 +23,8 @@ CSS_STYLE = """
     .stApp { background-color: black !important; color: white !important; }
     html, body, [class*="css"] { font-family: 'Segoe UI', sans-serif; font-size: 16px; color: white; }
     h1, h2, h3, h4, h5, h6, p, label, div, span { color: white !important; }
-    .stSelectbox div_data-baseweb="select"] *, .stSelectbox input, input_type="number"], [data-testid="stNumberInput"] input { color: white !important; background-color: rgba(30, 30, 30, 0.7) !important; }
-    div_data-baseweb="popover"] * { color: white !important; background-color: #333 !important; }
+    .stSelectbox div[data-baseweb="select"] *, .stSelectbox input, input[type="number"], [data-testid="stNumberInput"] input { color: white !important; background-color: rgba(30, 30, 30, 0.7) !important; }
+    div[data-baseweb="popover"] * { color: white !important; background-color: #333 !important; }
     header, [data-testid="stHeader"] { visibility: hidden; height: 0rem; padding: 0rem; }
     input:focus, select:focus, textarea:focus, .stSelectbox:focus-within { animation: pulse 0.6s; }
     @keyframes pulse {
@@ -35,13 +35,14 @@ CSS_STYLE = """
     button { background-color: #222 !important; color: white !important; border: 1px solid #444 !important; border-radius: 8px !important; padding: 0.5em 1em !important; transition: 0.3s ease; }
     button:hover { background-color: #333 !important; border: 1px solid white !important; color: white !important; }
     button svg { fill: white !important; }
+    /* AQUI ESTÁ A CORREÇÃO DO TAMANHO DO GRÁFICO */
     .grafico-fixo { width: 300px; height: 300px; z-index: 10000; background: none; position: fixed; top: 290px; left: 30px; }
-    div_data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
-    div_data-testid="stExpander"] summary svg { display: none; }
-    div_data-testid="stExpander"] summary::after { content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }
-    div_data-testid="stExpander"][aria-expanded="true"] summary::after { transform: rotate(180deg); }
-    div_data-testid="stExpander"] div_role="region"] { background-color: rgba(30, 30, 30, 0.7) !important; border-radius: 0 0 8px 8px !important; padding-top: 1rem !important; margin-top: -8px !important; }
-    div_data-testid="stExpander"] div_role="region"] > div { background-color: transparent !important; }
+    div[data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
+    div[data-testid="stExpander"] summary svg { display: none; }
+    div[data-testid="stExpander"] summary::after { content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }
+    div[data-testid="stExpander"][aria-expanded="true"] summary::after { transform: rotate(180deg); }
+    div[data-testid="stExpander"] div[role="region"] { background-color: rgba(30, 30, 30, 0.7) !important; border-radius: 0 0 8px 8px !important; padding-top: 1rem !important; margin-top: -8px !important; }
+    div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
     .subtotal-container { text-align: right; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
@@ -121,12 +122,12 @@ def gerar_pdf(dados_relatorio):
     p.drawString(72, y, "Subtotal Maxfinder:")
     p.drawRightString(width - 72, y, f"R$ {dados_relatorio['subtotal_eletronicos']:.2f}")
     y -= 20
-
+    
     if dados_relatorio['valor_total_modulos'] > 0:
         p.drawString(72, y, "Subtotal Módulos Auxiliares:")
         p.drawRightString(width - 72, y, f"R$ {dados_relatorio['valor_total_modulos']:.2f}")
         y -= 20
-
+        
     if dados_relatorio['valor_total_sinalizador'] > 0:
         p.drawString(72, y, f"Subtotal Sinalizador ({dados_relatorio['sinalizador_tipo']}):")
         p.drawRightString(width - 72, y, f"R$ {dados_relatorio['valor_total_sinalizador']:.2f}")
@@ -163,7 +164,7 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-subtotal_eletronicos = precos_amplificador_amplificador] + (qtd_driver * preco_driver) + precos_controlador_controlador_tipo]
+subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo]
 st.markdown(f'<p class="subtotal-container">Subtotal Maxfinder: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -174,11 +175,11 @@ for i in range(qtd_modelos_modulos):
     with st.expander(f"Modelo de Módulo Auxiliar #{i+1}"):
         tipo_modulo = st.selectbox(f"Tipo de módulo:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
         qtd_mod = st.number_input(f"Quantidade de módulos:", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
-        tipos_led_disponiveis = list(precos_tipo_led_config_tipo_modulo].keys())
+        tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
         tipo_led = st.selectbox(f"Tipo de LED:", tipos_led_disponiveis, key=f"tipo_led_{i}")
         max_cores = limite_cores.get((tipo_modulo, tipo_led), 1)
         cols = st.columns(4)
-        usar_amber, usar_red, usar_blue, usar_white = cols_0].checkbox("Amber", key=f"amber_{i}"), cols_1].checkbox("Red", key=f"red_{i}"), cols_2].checkbox("Blue", key=f"blue_{i}"), cols_3].checkbox("White", key=f"white_{i}")
+        usar_amber, usar_red, usar_blue, usar_white = cols[0].checkbox("Amber", key=f"amber_{i}"), cols[1].checkbox("Red", key=f"red_{i}"), cols[2].checkbox("Blue", key=f"blue_{i}"), cols[3].checkbox("White", key=f"white_{i}")
         cores_escolhidas = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if u]
         if len(cores_escolhidas) > max_cores:
             st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
@@ -187,12 +188,12 @@ for i in range(qtd_modelos_modulos):
         for cor in cores_escolhidas:
             limite = calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas)
             qtd = st.number_input(f"Qtd LEDs {cor} (máx {limite}):", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
-            qtd_leds_por_cor_cor] = qtd
+            qtd_leds_por_cor[cor] = qtd
         config_led = "Single"
         if len(cores_escolhidas) > 0: config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas) - 1]
-        preco_placa = precos_tipo_led_config_tipo_modulo]_tipo_led].get(config_led, 0)
+        preco_placa = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
         preco_base_mod = precos_modulo.get(tipo_modulo, 0)
-        preco_leds = sum(qtd * precos_cor_led_tipo_led]_cor] for cor, qtd in qtd_leds_por_cor.items())
+        preco_leds = sum(qtd * precos_cor_led[tipo_led][cor] for cor, qtd in qtd_leds_por_cor.items())
         valores_modulos.append((preco_base_mod + preco_placa + preco_leds) * qtd_mod)
 
 valor_total_modulos = sum(valores_modulos)
@@ -216,7 +217,7 @@ if sinalizador_tipo != "Nenhum":
             total_modulos_sinalizador_count += qtd_mod_sinalizador
             max_cores = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
             cols_s = st.columns(4)
-            usar_amber_s, usar_red_s, usar_blue_s, usar_white_s = cols_s_0].checkbox("Amber", key=f"amber_s_{j}"), cols_s_1].checkbox("Red", key=f"red_s_{j}"), cols_s_2].checkbox("Blue", key=f"blue_s_{j}"), cols_s_3].checkbox("White", key=f"white_s_{j}")
+            usar_amber_s, usar_red_s, usar_blue_s, usar_white_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}"), cols_s[1].checkbox("Red", key=f"red_s_{j}"), cols_s[2].checkbox("Blue", key=f"blue_s_{j}"), cols_s[3].checkbox("White", key=f"white_s_{j}")
             cores_s = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if u]
             if len(cores_s) > max_cores:
                 st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
@@ -226,15 +227,15 @@ if sinalizador_tipo != "Nenhum":
             for cor_s in cores_s:
                 limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_s)
                 qtd_s = st.number_input(f"Qtd LEDs {cor_s} (máx {limite_s}):", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
-                leds_s_cor_s] = qtd_s
+                leds_s[cor_s] = qtd_s
                 total_leds_no_modulo += qtd_s
             config_led_s = "Single"
             if len(cores_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_s) - 1]
             if tipo_led_sinalizador == "OPT":
-                preco_placa_s = precos_tipo_led_config_"Sinalizador"]_tipo_led_sinalizador].get(config_led_s, 0)
+                preco_placa_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
             else:
-                preco_placa_s = precos_tipo_led_config_"D-Max"]_tipo_led_sinalizador].get(config_led_s, 0)
-            preco_leds_s = sum(qtd * precos_cor_led_tipo_led_sinalizador]_cor] for cor, qtd in leds_s.items())
+                preco_placa_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
+            preco_leds_s = sum(qtd * precos_cor_led[tipo_led_sinalizador][cor] for cor, qtd in leds_s.items())
             valor_por_modelo_s = preco_placa_s + preco_leds_s
             if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
                 valor_por_modelo_s += 10.80
@@ -260,7 +261,7 @@ if total > 0:
         fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
         for text in texts: text.set_color("white")
-        for i, autotext in enumerate(autotexts): autotext.set_color(text_colors_i])
+        for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
         for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
         ax.axis('equal')
         plt.tight_layout()
@@ -278,7 +279,7 @@ if total > 0:
         "total": total,
         "imagem_bytes": buf.getvalue()
     }
-
+    
     st.download_button(
         label="📄 Gerar e Baixar Relatório",
         data=gerar_pdf(dados_para_pdf),
