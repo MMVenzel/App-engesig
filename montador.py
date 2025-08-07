@@ -262,13 +262,10 @@ if total > 0:
         for text in texts: text.set_color("white")
         for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
         for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
-        
-        # AQUI ESTÁ A CORREÇÃO PARA O GRÁFICO FICAR SEMPRE REDONDO
         ax.axis('equal')
-        # Removido plt.tight_layout() que pode causar distorção
         
-        fig.patch.set_alpha(0)
-        fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
+        # AQUI ESTÁ A CORREÇÃO FINAL PARA O GRÁFICO FICAR SEMPRE REDONDO
+        fig.savefig(buf, format="png", transparent=True)
         buf.seek(0)
         img_base64 = base64.b64encode(buf.getvalue()).decode()
         st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
