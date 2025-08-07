@@ -64,8 +64,9 @@ precos_tipo_led_config = {
     "D-Max": {
         "3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
     },
+    # Tabela Sinalizador agora contém o preço específico para o OPT
     "Sinalizador": {
-        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3},
+        "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 17.09}, "Q-MAX": {"Single": 7.3},
     }
 }
 precos_cor_led = {
@@ -98,10 +99,9 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
         if tipo_led == "3W":
             if num_cores == 1: limite = 9
             elif num_cores in [2, 3]: limite = 3
-        # AQUI ESTÁ A ALTERAÇÃO SOLICITADA
         elif tipo_led == "OPT":
             limite = 4
-        else: # Este else agora cobre apenas o Q-MAX
+        else:
             limite = 3
     return limite
 
@@ -228,7 +228,13 @@ if sinalizador_tipo != "Nenhum":
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
             
-            preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
+            # LÓGICA DE PREÇO ATUALIZADA
+            # Para OPT, usa o preço específico da tabela Sinalizador. Para os outros, continua usando a tabela D-Max.
+            if tipo_led_sinalizador == "OPT":
+                preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+            else:
+                preco_led_config_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
+            
             valor_por_modelo_s = preco_led_config_s
             for cor, qtd in qtd_leds_por_cor_s.items():
                 valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
@@ -246,7 +252,7 @@ valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
-total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
+total = valor_amplificador + driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 buf = io.BytesIO()
