@@ -35,18 +35,7 @@ CSS_STYLE = """
     button { background-color: #222 !important; color: white !important; border: 1px solid #444 !important; border-radius: 8px !important; padding: 0.5em 1em !important; transition: 0.3s ease; }
     button:hover { background-color: #333 !important; border: 1px solid white !important; color: white !important; }
     button svg { fill: white !important; }
-    
-    /* ESTA É A REGRA QUE FIXA O GRÁFICO NA ESQUERDA */
-    .grafico-fixo {
-        width: 300px;
-        height: 300px;
-        z-index: 10000;
-        background: none;
-        position: fixed;
-        top: 290px;
-        left: 30px;
-    }
-    
+    .grafico-fixo { width: 300px; height: 300px; z-index: 10000; background: none; position: fixed; top: 290px; left: 30px; }
     div[data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
     div[data-testid="stExpander"] summary svg { display: none; }
     div[data-testid="stExpander"] summary::after { content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }
@@ -273,13 +262,15 @@ if total > 0:
         for text in texts: text.set_color("white")
         for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
         for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
+        
+        # AQUI ESTÁ A CORREÇÃO PARA O GRÁFICO FICAR SEMPRE REDONDO
         ax.axis('equal')
-        plt.tight_layout()
+        # Removido plt.tight_layout() que pode causar distorção
+        
         fig.patch.set_alpha(0)
-        fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
+        fig.savefig(buf, format="png", transparent=True, bbox_inches='tight', pad_inches=0.1)
         buf.seek(0)
         img_base64 = base64.b64encode(buf.getvalue()).decode()
-        # ESTA É A LINHA QUE EXIBE O GRÁFICO USANDO A CLASSE CSS
         st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
 
     dados_para_pdf = {
