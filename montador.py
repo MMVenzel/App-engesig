@@ -7,7 +7,7 @@ import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.utils import ImageReader
-import datetime
+from datetime import datetime
 
 # --- CONFIGURAÇÃO INICIAL DA PÁGINA ---
 st.set_page_config(
@@ -100,20 +100,17 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas):
         return 3
     return 18
 
-# --- NOVA FUNÇÃO DE PDF USANDO REPORTLAB (À PROVA DE FALHAS) ---
 def gerar_pdf(dados_relatorio):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    # --- Título e Data ---
     p.setFont("Helvetica-Bold", 16)
     p.drawCentredString(width / 2.0, height - 50, "Relatório de Custo - Sinalização")
     p.setFont("Helvetica", 10)
     data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     p.drawCentredString(width / 2.0, height - 70, f"Data de Geração: {data}")
 
-    # --- Resumo dos Componentes ---
     y = height - 120
     p.setFont("Helvetica-Bold", 12)
     p.drawString(72, y, "Resumo dos Componentes")
@@ -121,7 +118,6 @@ def gerar_pdf(dados_relatorio):
     y -= 25
 
     p.setFont("Helvetica", 11)
-    
     p.drawString(72, y, "Subtotal Sirene e Controlador:")
     p.drawRightString(width - 72, y, f"R$ {dados_relatorio['subtotal_eletronicos']:.2f}")
     y -= 20
@@ -136,7 +132,6 @@ def gerar_pdf(dados_relatorio):
         p.drawRightString(width - 72, y, f"R$ {dados_relatorio['valor_total_sinalizador']:.2f}")
         y -= 20
 
-    # --- Custo Total ---
     y -= 10
     p.line(72, y, width - 72, y)
     y -= 18
@@ -144,11 +139,13 @@ def gerar_pdf(dados_relatorio):
     p.drawString(72, y, "CUSTO TOTAL:")
     p.drawRightString(width - 72, y, f"R$ {dados_relatorio['total']:.2f}")
 
-    # --- Imagem ---
     img_bytes = dados_relatorio.get("imagem_bytes")
     if img_bytes and len(img_bytes) > 0:
-        pil_image = Image.open(io.BytesIO(img_bytes))
-        p.drawImage(ImageReader(pil_image), x=(width - 300) / 2.0, y=y-250, width=300, height=300, preserveAspectRatio=True, mask='auto')
+        try:
+            pil_image = Image.open(io.BytesIO(img_bytes))
+            p.drawImage(ImageReader(pil_image), x=(width - 300) / 2.0, y=y-250, width=300, height=300, preserveAspectRatio=True, mask='auto')
+        except Exception:
+            p.drawString(72, y-30, "Erro ao processar imagem do gráfico.")
 
     p.showPage()
     p.save()
@@ -176,7 +173,6 @@ qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicio
 valores_modulos = []
 for i in range(qtd_modelos_modulos):
     with st.expander(f"Modelo de Módulo Auxiliar #{i+1}"):
-        # ... (código dos módulos, sem alterações)...
         tipo_modulo = st.selectbox(f"Tipo de módulo:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
         qtd_mod = st.number_input(f"Quantidade de módulos:", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
         tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
@@ -210,7 +206,6 @@ sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_si
 
 valor_total_sinalizador = 0
 if sinalizador_tipo != "Nenhum":
-    # ... (código do sinalizador, sem alterações)...
     base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
     tipo_led_sinalizador = st.selectbox("Tipo de LED do Sinalizador:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
     qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0)
