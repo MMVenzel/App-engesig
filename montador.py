@@ -35,16 +35,19 @@ CSS_STYLE = """
     button { background-color: #222 !important; color: white !important; border: 1px solid #444 !important; border-radius: 8px !important; padding: 0.5em 1em !important; transition: 0.3s ease; }
     button:hover { background-color: #333 !important; border: 1px solid white !important; color: white !important; }
     button svg { fill: white !important; }
-    /* AQUI ESTÁ A CORREÇÃO PARA FIXAR O GRÁFICO */
-    .grafico-fixo {
-        width: 300px;
-        height: 300px; /* Garante altura fixa */
-        z-index: 10000;
-        background: none;
+    
+    /* REGRA MAIS FORTE E DIRETA PARA O GRÁFICO */
+    img.grafico-fixo {
         position: fixed;
         top: 290px;
         left: 30px;
+        width: 300px !important;
+        height: 300px !important;
+        object-fit: contain;
+        z-index: 10000;
+        background: none;
     }
+    
     div[data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
     div[data-testid="stExpander"] summary svg { display: none; }
     div[data-testid="stExpander"] summary::after { content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }
@@ -277,6 +280,7 @@ if total > 0:
         fig.savefig(buf, format="png", transparent=True, bbox_inches='tight')
         buf.seek(0)
         img_base64 = base64.b64encode(buf.getvalue()).decode()
+        # MUDANÇA: Exibe a imagem dentro de um div com a classe CSS
         st.markdown(f'<div class="grafico-fixo"><img src="data:image/png;base64,{img_base64}" style="width: 100%; height: 100%; object-fit: contain;"></div>', unsafe_allow_html=True)
 
     dados_para_pdf = {
