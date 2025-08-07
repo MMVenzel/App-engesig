@@ -64,7 +64,6 @@ precos_tipo_led_config = {
     "D-Max": {
         "3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1},
     },
-    # Tabela Sinalizador agora contém o preço específico para o OPT
     "Sinalizador": {
         "3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 17.09}, "Q-MAX": {"Single": 7.3},
     }
@@ -228,8 +227,6 @@ if sinalizador_tipo != "Nenhum":
             config_led_s = "Single"
             if len(cores_escolhidas_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_escolhidas_s)-1]
             
-            # LÓGICA DE PREÇO ATUALIZADA
-            # Para OPT, usa o preço específico da tabela Sinalizador. Para os outros, continua usando a tabela D-Max.
             if tipo_led_sinalizador == "OPT":
                 preco_led_config_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
             else:
@@ -252,7 +249,8 @@ valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 valor_total_modulos = sum(valores_modulos)
-total = valor_amplificador + driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
+# AQUI ESTÁ A CORREÇÃO DO ERRO DE DIGITAÇÃO
+total = valor_amplificador + valor_driver + valor_controlador + valor_total_modulos + valor_total_sinalizador
 st.subheader(f"💵 Custo Estimado: R$ {total:.2f}")
 
 buf = io.BytesIO()
