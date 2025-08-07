@@ -151,8 +151,8 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
 
-# --- SEÇÃO DE ELETRÔNICOS ---
-st.markdown("### 🔌 Parte Eletrônica")
+# --- SEÇÃO DE SIRENE E CONTROLADOR ---
+st.markdown("### 🔊 Sirene e Controlador")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 qtd_driver = 0
 if amplificador in ["100W", "200W"]:
@@ -160,13 +160,13 @@ if amplificador in ["100W", "200W"]:
         qtd_driver = 1 if amplificador == "100W" else 2
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-# Cálculo e exibição do subtotal de eletrônicos
+# Cálculo e exibição do subtotal
 valor_amplificador = precos_amplificador[amplificador]
 valor_driver = qtd_driver * preco_driver
 valor_controlador = precos_controlador[controlador_tipo]
 subtotal_eletronicos = valor_amplificador + valor_driver + valor_controlador
-st.metric(label="Subtotal da Parte Eletrônica", value=f"R$ {subtotal_eletronicos:.2f}")
-st.markdown("---") # Linha divisória
+st.metric(label="Subtotal de Sirene e Controlador", value=f"R$ {subtotal_eletronicos:.2f}")
+st.markdown("---")
 
 # --- SEÇÃO DE MÓDULOS AUXILIARES ---
 st.markdown("### 🔧 Módulos Auxiliares")
@@ -200,11 +200,11 @@ for i in range(qtd_modelos_modulos):
         for cor, qtd in qtd_leds_por_cor.items(): valor_modulo_unidade += qtd * precos_cor_led[tipo_led][cor]
         valores_modulos.append(valor_modulo_unidade * qtd_mod)
 
-# Cálculo e exibição do subtotal de módulos auxiliares
+# Cálculo e exibição do subtotal
 valor_total_modulos = sum(valores_modulos)
 if qtd_modelos_modulos > 0:
     st.metric(label="Subtotal dos Módulos Auxiliares", value=f"R$ {valor_total_modulos:.2f}")
-st.markdown("---") # Linha divisória
+st.markdown("---")
 
 # --- SEÇÃO DE SINALIZADOR DE TETO ---
 st.markdown("### 🚨 Sinalizador de Teto")
@@ -263,10 +263,10 @@ if sinalizador_tipo != "Nenhum":
     custo_total_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * numero_total_de_modulos_sinalizador
     valor_total_sinalizador = valor_base_sinalizador + valor_total_sinalizador_modulos + custo_total_kit
 
-# Exibição do subtotal do sinalizador de teto
+# Exibição do subtotal
 if sinalizador_tipo != "Nenhum":
     st.metric(label="Subtotal do Sinalizador de Teto", value=f"R$ {valor_total_sinalizador:.2f}")
-st.markdown("---") # Linha divisória
+st.markdown("---")
 
 # --- CÁLCULO FINAL E BOTÕES ---
 total = subtotal_eletronicos + valor_total_modulos + valor_total_sinalizador
@@ -275,12 +275,12 @@ st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
 buf = io.BytesIO()
 if total > 0:
     labels, values, colors, text_colors = [], [], [], []
-    if subtotal_eletronicos > 0: labels.append("Eletrônicos"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
+    if subtotal_eletronicos > 0: labels.append("Sirene/Controlador"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
     if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
     if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
     
     fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
-    if values: # Apenas mostra o gráfico se houver valores
+    if values:
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
         for text in texts: text.set_color("white")
         for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
