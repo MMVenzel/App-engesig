@@ -7,7 +7,7 @@ import io
 from fpdf import FPDF
 import datetime
 import tempfile
-import os # <-- IMPORTANTE: Nova biblioteca adicionada
+import os
 
 # --- CONFIG INICIAL ---
 st.set_page_config(
@@ -108,17 +108,13 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
             limite = 3
     return limite
 
-# AQUI ESTÁ A FUNÇÃO TOTALMENTE CORRIGIDA
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
               sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
-    
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
-
-    # ... (código para adicionar texto ao PDF - sem alterações)
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(0, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
     pdf.ln(5)
@@ -148,25 +144,17 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
-
+    
     temp_image_path = None
     try:
-        # Lógica robusta com arquivo temporário
         if img_bytes and len(img_bytes) > 0:
-            # Cria um arquivo temporário, mas não o apaga automaticamente ao fechar
             temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
             temp_file.write(img_bytes)
-            temp_image_path = temp_file.name # Salva o caminho do arquivo
-            temp_file.close() # Fecha o arquivo para garantir que foi salvo no disco
-
-            # Usa o caminho do arquivo salvo para adicionar a imagem
+            temp_image_path = temp_file.name
+            temp_file.close()
             pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
-
-        # Gera a saída do PDF para uma variável
         pdf_output_bytes = pdf.output()
-
     finally:
-        # Garante que o arquivo temporário seja apagado, não importa o que aconteça
         if temp_image_path and os.path.exists(temp_image_path):
             os.remove(temp_image_path)
             
@@ -303,30 +291,18 @@ if total > 0:
         img_base64 = base64.b64encode(buf.getvalue()).decode()
         st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
     
-    if 'pdf_gerado' not in st.session_state:
-        st.session_state.pdf_gerado = False
-        st.session_state.pdf_bytes = None
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("📄 Gerar Relatório"):
-            st.session_state.pdf_bytes = gerar_pdf(
-                amplificador, valor_amplificador, qtd_driver, valor_driver,
-                controlador_tipo, valor_controlador, valor_total_modulos,
-                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
-            )
-            st.session_state.pdf_gerado = True
-            st.rerun()
-
-    with col2:
-        if st.session_state.pdf_gerado and st.session_state.pdf_bytes:
-            st.download_button(
-                label="📥 Baixar PDF",
-                data=st.session_state.pdf_bytes,
-                file_name=f"relatorio_custos_{datetime.datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
-                mime='application/pdf',
-                key="download_pdf_botao"
-            )
+    # --- LÓGICA DE BOTÃO ÚNICO E CONFIÁVEL ---
+    st.download_button(
+        label="📄 Gerar e Baixar Relatório",
+        data=gerar_pdf(
+            amplificador, valor_amplificador, qtd_driver, valor_driver,
+            controlador_tipo, valor_controlador, valor_total_modulos,
+            sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
+        ),
+        file_name=f"relatorio_custos_{datetime.datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
+        mime='application/pdf',
+        key="download_pdf_final"
+    )
 
 # --- RODAPÉ E LOGO ---
 st.markdown('<div class="rodape">© 2025 by Engesig. Created by Matteo Marques & Matheus Venzel</div>', unsafe_allow_html=True)
