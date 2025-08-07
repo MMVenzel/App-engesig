@@ -54,11 +54,8 @@ precos_controlador = {
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
 }
 precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
-
-# AQUI ESTÃO OS NOVOS VALORES
 precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 634.17, "Brutale": 717.07}
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
-
 precos_tipo_led_config = {
     "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
     "Micro": {
@@ -99,11 +96,16 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
     elif tipo_modulo == "Nano" and tipo_led == "3W": limite = 9 if num_cores == 1 else 3
     elif tipo_modulo == "Sinalizador":
         if tipo_led == "3W":
-            if num_cores == 1: limite = 9
-            elif num_cores in [2, 3]: limite = 3
+            if num_cores == 1:
+                limite = 9
+            # AQUI ESTÁ A NOVA REGRA PARA DUAL COLOR
+            elif num_cores == 2:
+                limite = 6
+            elif num_cores == 3:
+                limite = 3
         elif tipo_led == "OPT":
             limite = 4
-        else:
+        else: # Q-MAX
             limite = 3
     return limite
 
