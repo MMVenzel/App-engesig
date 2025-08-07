@@ -42,6 +42,11 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
+    
+    /* NOVA REGRA PARA DIMINUIR O VALOR DO SUBTOTAL */
+    div[data-testid="stMetricValue"] {
+        font-size: 1.75rem !important;
+    }
 </style>
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
