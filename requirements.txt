@@ -1,4 +1,4 @@
 streamlit
-Pillow
 matplotlib
-fpdf
+fpdf2
+reportlab
