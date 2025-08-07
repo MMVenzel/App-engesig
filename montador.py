@@ -305,7 +305,7 @@ if total > 0:
                 controlador_tipo, valor_controlador, valor_total_modulos,
                 sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
             )
-            st.rerun() # ADICIONADO PARA ATUALIZAR A INTERFACE E MOSTRAR O BOTÃO DE DOWNLOAD
+            # st.rerun() # Removido para testar se resolve o problema do download
     with col2:
         if st.session_state.pdf_bytes:
             st.download_button(
