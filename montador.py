@@ -7,6 +7,7 @@ import io
 from fpdf import FPDF
 import datetime
 import tempfile
+import os # <-- IMPORTANTE: Nova biblioteca adicionada
 
 # --- CONFIG INICIAL ---
 st.set_page_config(
@@ -107,14 +108,17 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
             limite = 3
     return limite
 
-# ALTERAÇÃO 1: A FUNÇÃO VOLTA A USAR O MÉTODO DIRETO EM MEMÓRIA
+# AQUI ESTÁ A FUNÇÃO TOTALMENTE CORRIGIDA
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
               controlador_tipo, valor_controlador, valor_total_modulos,
-              sinalizador_tipo, valor_total_sinalizador, total, img_buffer): # Parâmetro é o buffer
+              sinalizador_tipo, valor_total_sinalizador, total, img_bytes):
+    
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.set_font("Arial", size=12)
+
+    # ... (código para adicionar texto ao PDF - sem alterações)
     pdf.set_font("Arial", 'B', 16)
     pdf.cell(0, 10, txt="Relatório de Custo - Sinalização", ln=True, align='C')
     pdf.ln(5)
@@ -144,13 +148,29 @@ def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
     pdf.cell(100, 10, txt="CUSTO TOTAL:", ln=0)
     pdf.cell(0, 10, txt=f"R$ {total:.2f}", ln=1, align='R', border='T')
     pdf.ln(10)
-    
-    # Lógica em memória, sem arquivo temporário
-    if img_buffer and img_buffer.getbuffer().nbytes > 0:
-        img_buffer.seek(0) # Garante que o buffer está no início
-        pdf.image(img_buffer, x=pdf.get_x() + 45, w=100, type='PNG')
+
+    temp_image_path = None
+    try:
+        # Lógica robusta com arquivo temporário
+        if img_bytes and len(img_bytes) > 0:
+            # Cria um arquivo temporário, mas não o apaga automaticamente ao fechar
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+            temp_file.write(img_bytes)
+            temp_image_path = temp_file.name # Salva o caminho do arquivo
+            temp_file.close() # Fecha o arquivo para garantir que foi salvo no disco
+
+            # Usa o caminho do arquivo salvo para adicionar a imagem
+            pdf.image(temp_image_path, x=pdf.get_x() + 45, w=100)
+
+        # Gera a saída do PDF para uma variável
+        pdf_output_bytes = pdf.output()
+
+    finally:
+        # Garante que o arquivo temporário seja apagado, não importa o que aconteça
+        if temp_image_path and os.path.exists(temp_image_path):
+            os.remove(temp_image_path)
             
-    return pdf.output()
+    return pdf_output_bytes
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
@@ -293,7 +313,7 @@ if total > 0:
             st.session_state.pdf_bytes = gerar_pdf(
                 amplificador, valor_amplificador, qtd_driver, valor_driver,
                 controlador_tipo, valor_controlador, valor_total_modulos,
-                sinalizador_tipo, valor_total_sinalizador, total, buf # ALTERAÇÃO 2: Passa o buffer
+                sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
             )
             st.session_state.pdf_gerado = True
             st.rerun()
