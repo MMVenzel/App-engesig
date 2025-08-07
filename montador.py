@@ -118,7 +118,7 @@ def gerar_pdf(dados_relatorio):
     y -= 25
 
     p.setFont("Helvetica", 11)
-    p.drawString(72, y, "Subtotal Sirene e Controlador:")
+    p.drawString(72, y, "Subtotal MAXFINDER:")
     p.drawRightString(width - 72, y, f"R$ {dados_relatorio['subtotal_eletronicos']:.2f}")
     y -= 20
     
@@ -149,14 +149,13 @@ def gerar_pdf(dados_relatorio):
 
     p.showPage()
     p.save()
-    
     buffer.seek(0)
     return buffer.getvalue()
 
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
 
-st.markdown("### 🔊 Sirene e Controlador")
+st.markdown("### 🔊 MAXFINDER")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 qtd_driver = 0
 if amplificador in ["100W", "200W"]:
@@ -165,7 +164,7 @@ if amplificador in ["100W", "200W"]:
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
 subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo]
-st.markdown(f'<p class="subtotal-container">Subtotal de Sirene e Controlador: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
+st.markdown(f'<p class="subtotal-container">Subtotal MAXFINDER: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 st.markdown("### 🔧 Módulos Auxiliares")
@@ -254,7 +253,7 @@ st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
 if total > 0:
     buf = io.BytesIO()
     labels, values, colors, text_colors = [], [], [], []
-    if subtotal_eletronicos > 0: labels.append("Sirene/Controlador"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
+    if subtotal_eletronicos > 0: labels.append("MAXFINDER"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
     if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
     if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
     if values:
