@@ -98,7 +98,11 @@ def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas, cor_atual):
         if tipo_led == "3W":
             if num_cores == 1: limite = 9
             elif num_cores in [2, 3]: limite = 3
-        else: limite = 3
+        # AQUI ESTÁ A ALTERAÇÃO SOLICITADA
+        elif tipo_led == "OPT":
+            limite = 4
+        else: # Este else agora cobre apenas o Q-MAX
+            limite = 3
     return limite
 
 def gerar_pdf(amplificador, valor_amplificador, qtd_driver, valor_driver,
@@ -229,7 +233,6 @@ if sinalizador_tipo != "Nenhum":
             for cor, qtd in qtd_leds_por_cor_s.items():
                 valor_por_modelo_s += qtd * precos_cor_led[tipo_led_sinalizador][cor]
             
-            # AQUI ESTÁ A NOVA REGRA DE NEGÓCIO
             if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
                 valor_por_modelo_s += 10.80
             
