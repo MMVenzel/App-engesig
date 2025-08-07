@@ -295,8 +295,12 @@ if total > 0:
     img_base64 = base64.b64encode(buf.getvalue()).decode()
     st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
     
+    # --- LÓGICA DE BOTÕES ATUALIZADA ---
     if 'pdf_bytes' not in st.session_state:
         st.session_state.pdf_bytes = None
+    if 'pdf_gerado' not in st.session_state:
+        st.session_state.pdf_gerado = False
+
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("📄 Gerar Relatório"):
@@ -305,9 +309,10 @@ if total > 0:
                 controlador_tipo, valor_controlador, valor_total_modulos,
                 sinalizador_tipo, valor_total_sinalizador, total, buf.getvalue()
             )
-            # st.rerun() # Removido para testar se resolve o problema do download
+            st.session_state.pdf_gerado = True
+
     with col2:
-        if st.session_state.pdf_bytes:
+        if st.session_state.pdf_gerado:
             st.download_button(
                 label="📥 Baixar PDF",
                 data=st.session_state.pdf_bytes,
