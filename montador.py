@@ -44,8 +44,21 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    .subtotal-container { text-align: left; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
-    .subtotal-container span { color: white; font-size: 1.2rem; margin-left: 10px; }
+    
+    /* SUBTOTAL ALINHADO À DIREITA */
+    .subtotal-container {
+        text-align: right; /* ALTERADO DE 'left' PARA 'right' */
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #CCCCCC;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .subtotal-container span {
+        color: white;
+        font-size: 1.2rem;
+        margin-left: 10px;
+    }
 </style>
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
@@ -253,24 +266,9 @@ st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
 if total > 0:
     buf = io.BytesIO()
     labels, values, colors, text_colors = [], [], [], []
-    
-    # --- LÓGICA DE CORES DO GRÁFICO ATUALIZADA ---
-    if subtotal_eletronicos > 0:
-        labels.append("Maxfinder")
-        values.append(subtotal_eletronicos)
-        colors.append('#e50914')  # Vermelho
-        text_colors.append("white")
-    if valor_total_modulos > 0:
-        labels.append("Módulos Aux.")
-        values.append(valor_total_modulos)
-        colors.append('#888888')  # Cinza
-        text_colors.append("white")
-    if valor_total_sinalizador > 0:
-        labels.append("Sinalizador Teto")
-        values.append(valor_total_sinalizador)
-        colors.append('#ffffff')  # Branco
-        text_colors.append("black")
-
+    if subtotal_eletronicos > 0: labels.append("Maxfinder"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
+    if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#888888'); text_colors.append("white")
+    if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#ffffff'); text_colors.append("black")
     if values:
         fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
