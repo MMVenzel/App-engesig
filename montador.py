@@ -44,26 +44,15 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    
-    /* SUBTOTAL COM FONTE MAIOR E ALINHADO À DIREITA */
-    .subtotal-container {
-        text-align: right; /* Alinhado à direita */
-        font-size: 1.2rem; /* Tamanho da fonte do texto aumentado */
-        font-weight: bold;
-        color: #CCCCCC;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-    .subtotal-container span {
-        color: white;
-        font-size: 1.4rem; /* Tamanho da fonte do valor aumentado */
-        margin-left: 10px;
-    }
-    .observacao {
-        font-size: 0.8rem;
-        color: #888;
-        text-align: right; /* Alinhado à direita */
-        margin-top: -8px; /* Reduz o espaço acima */
+    .subtotal-container { text-align: right; font-size: 1.2rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
+    .subtotal-container span { color: white; font-size: 1.4rem; margin-left: 10px; }
+    .observacao { font-size: 0.8rem; color: #888; text-align: right; margin-top: -8px; }
+
+    /* NOVA REGRA: ESCONDE O GRÁFICO E A LOGO EM TELAS PEQUENAS (CELULARES) */
+    @media (max-width: 768px) {
+        .grafico-fixo, .logo-fixa {
+            display: none !important;
+        }
     }
 </style>
 """
