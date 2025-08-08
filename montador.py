@@ -47,10 +47,10 @@ CSS_STYLE = """
     .subtotal-container { text-align: right; font-size: 1.2rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
     .subtotal-container span { color: white; font-size: 1.4rem; margin-left: 10px; }
     .observacao { font-size: 0.8rem; color: #888; text-align: right; margin-top: -8px; }
-    
-    /* Esconde apenas o gráfico em telas pequenas (celulares) */
+
+    /* ALTERADO: Esconde o gráfico E A LOGO em telas pequenas (celulares) */
     @media (max-width: 768px) {
-        .grafico-fixo {
+        .grafico-fixo, .logo-fixa {
             display: none !important;
         }
     }
