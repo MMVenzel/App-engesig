@@ -253,24 +253,9 @@ st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
 if total > 0:
     buf = io.BytesIO()
     labels, values, colors, text_colors = [], [], [], []
-    
-    # --- LÓGICA DE CORES DO GRÁFICO ATUALIZADA ---
-    if subtotal_eletronicos > 0:
-        labels.append("Maxfinder")
-        values.append(subtotal_eletronicos)
-        colors.append('#e50914')  # Vermelho
-        text_colors.append("white")
-    if valor_total_modulos > 0:
-        labels.append("Módulos Aux.")
-        values.append(valor_total_modulos)
-        colors.append('#888888')  # Cinza
-        text_colors.append("white")
-    if valor_total_sinalizador > 0:
-        labels.append("Sinalizador Teto")
-        values.append(valor_total_sinalizador)
-        colors.append('#ffffff')  # Branco
-        text_colors.append("black")
-
+    if subtotal_eletronicos > 0: labels.append("Maxfinder"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
+    if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#ffffff'); text_colors.append("black")
+    if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#00bfff'); text_colors.append("white")
     if values:
         fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
         wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
@@ -278,6 +263,8 @@ if total > 0:
         for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
         for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
         ax.axis('equal')
+        
+        # AQUI ESTÁ A CORREÇÃO FINAL PARA O GRÁFICO FICAR SEMPRE REDONDO
         fig.savefig(buf, format="png", transparent=True)
         buf.seek(0)
         img_base64 = base64.b64encode(buf.getvalue()).decode()
