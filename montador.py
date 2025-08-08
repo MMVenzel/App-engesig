@@ -16,39 +16,61 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- ESTILO VISUAL (CSS) ---
-CSS_STYLE = """
+# --- NOVA FUNÇÃO PARA CARREGAR IMAGEM DE FUNDO ---
+@st.cache_data
+def get_img_as_base64(file):
+    try:
+        with open(file, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except FileNotFoundError:
+        st.error("Arquivo do plano de fundo não encontrado. Verifique se 'plano_de_fundo.png' está na pasta.")
+        return None
+
+# Carrega a imagem e prepara o CSS
+img = get_img_as_base64("plano_de_fundo.png")
+
+CSS_STYLE = f"""
 <style>
-    :root { color-scheme: dark; }
-    .stApp { background-color: black !important; color: white !important; }
-    html, body, [class*="css"] { font-family: 'Segoe UI', sans-serif; font-size: 16px; color: white; }
-    h1, h2, h3, h4, h5, h6, p, label, div, span { color: white !important; }
-    .stSelectbox div[data-baseweb="select"] *, .stSelectbox input, input[type="number"], [data-testid="stNumberInput"] input { color: white !important; background-color: rgba(30, 30, 30, 0.7) !important; }
-    div[data-baseweb="popover"] * { color: white !important; background-color: #333 !important; }
-    header, [data-testid="stHeader"] { visibility: hidden; height: 0rem; padding: 0rem; }
-    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within { animation: pulse 0.6s; }
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-    }
-    button { background-color: #222 !important; color: white !important; border: 1px solid #444 !important; border-radius: 8px !important; padding: 0.5em 1em !important; transition: 0.3s ease; }
-    button:hover { background-color: #333 !important; border: 1px solid white !important; color: white !important; }
-    button svg { fill: white !important; }
-    .grafico-fixo { width: 300px; height: 300px; z-index: 10000; background: none; position: fixed; top: 290px; left: 30px; }
-    div[data-testid="stExpander"] summary { background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }
-    div[data-testid="stExpander"] summary svg { display: none; }
-    div[data-testid="stExpander"] summary::after { content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }
-    div[data-testid="stExpander"][aria-expanded="true"] summary::after { transform: rotate(180deg); }
-    div[data-testid="stExpander"] div[role="region"] { background-color: rgba(30, 30, 30, 0.7) !important; border-radius: 0 0 8px 8px !important; padding-top: 1rem !important; margin-top: -8px !important; }
-    div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
-    .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
-    .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    .subtotal-container { text-align: left; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
-    .subtotal-container span { color: white; font-size: 1.2rem; margin-left: 10px; }
+    :root {{ color-scheme: dark; }}
+    
+    /* APLICA A IMAGEM DE FUNDO */
+    .stApp {{
+        background-image: url("data:image/png;base64,{img}");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }}
+
+    html, body, [class*="css"] {{ font-family: 'Segoe UI', sans-serif; font-size: 16px; color: white; }}
+    h1, h2, h3, h4, h5, h6, p, label, div, span {{ color: white !important; }}
+    .stSelectbox div[data-baseweb="select"] *, .stSelectbox input, input[type="number"], [data-testid="stNumberInput"] input {{ color: white !important; background-color: rgba(30, 30, 30, 0.7) !important; }}
+    div[data-baseweb="popover"] * {{ color: white !important; background-color: #333 !important; }}
+    header, [data-testid="stHeader"] {{ visibility: hidden; height: 0rem; padding: 0rem; }}
+    input:focus, select:focus, textarea:focus, .stSelectbox:focus-within {{ animation: pulse 0.6s; }}
+    @keyframes pulse {{
+        0% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }}
+        70% {{ box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); }}
+        100% {{ box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }}
+    }}
+    button {{ background-color: #222 !important; color: white !important; border: 1px solid #444 !important; border-radius: 8px !important; padding: 0.5em 1em !important; transition: 0.3s ease; }}
+    button:hover {{ background-color: #333 !important; border: 1px solid white !important; color: white !important; }}
+    button svg {{ fill: white !important; }}
+    .grafico-fixo {{ width: 300px; height: 300px; z-index: 10000; background: none; position: fixed; top: 290px; left: 30px; }}
+    div[data-testid="stExpander"] summary {{ background-color: #1E1E1E !important; color: white !important; border-radius: 8px !important; padding: 0.5rem !important; }}
+    div[data-testid="stExpander"] summary svg {{ display: none; }}
+    div[data-testid="stExpander"] summary::after {{ content: ' ▼'; float: left; margin-right: 10px; transition: transform 0.2s ease-in-out; }}
+    div[data-testid="stExpander"][aria-expanded="true"] summary::after {{ transform: rotate(180deg); }}
+    div[data-testid="stExpander"] div[role="region"] {{ background-color: rgba(30, 30, 30, 0.7) !important; border-radius: 0 0 8px 8px !important; padding-top: 1rem !important; margin-top: -8px !important; }}
+    div[data-testid="stExpander"] div[role="region"] > div {{ background-color: transparent !important; }}
+    .rodape {{ position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }}
+    .logo-fixa {{ position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }}
+    .subtotal-container {{ text-align: left; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }}
+    .subtotal-container span {{ color: white; font-size: 1.2rem; margin-left: 10px; }}
 </style>
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
+
 
 # --- DADOS E PREÇOS ---
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
