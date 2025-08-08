@@ -44,9 +44,27 @@ CSS_STYLE = """
     div[data-testid="stExpander"] div[role="region"] > div { background-color: transparent !important; }
     .rodape { position: fixed; bottom: 10px; left: 10px; color: #888; font-size: 12px; z-index: 9999; }
     .logo-fixa { position: fixed; top: 40px; left: 40px; width: 160px; z-index: 10000; }
-    .subtotal-container { text-align: left; font-size: 1.1rem; font-weight: bold; color: #CCCCCC; margin-top: 10px; margin-bottom: 10px; }
-    .subtotal-container span { color: white; font-size: 1.2rem; margin-left: 10px; }
-    .observacao { font-size: 0.8rem; color: #888; text-align: left; }
+    
+    /* SUBTOTAL COM FONTE MAIOR E ALINHADO À DIREITA */
+    .subtotal-container {
+        text-align: right; /* Alinhado à direita */
+        font-size: 1.2rem; /* Tamanho da fonte do texto aumentado */
+        font-weight: bold;
+        color: #CCCCCC;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .subtotal-container span {
+        color: white;
+        font-size: 1.4rem; /* Tamanho da fonte do valor aumentado */
+        margin-left: 10px;
+    }
+    .observacao {
+        font-size: 0.8rem;
+        color: #888;
+        text-align: right; /* Alinhado à direita */
+        margin-top: -8px; /* Reduz o espaço acima */
+    }
 </style>
 """
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
@@ -245,7 +263,6 @@ if sinalizador_tipo != "Nenhum":
 
 if sinalizador_tipo != "Nenhum":
     st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
-    # ADICIONADA A OBSERVAÇÃO ABAIXO
     st.markdown('<p class="observacao">Obs.: Valor aproximado.</p>', unsafe_allow_html=True)
 st.markdown("---")
 
