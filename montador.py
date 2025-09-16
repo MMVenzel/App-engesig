@@ -48,7 +48,6 @@ CSS_STYLE = """
     .subtotal-container span { color: white; font-size: 1.4rem; margin-left: 10px; }
     .observacao { font-size: 0.8rem; color: #888; text-align: right; margin-top: -8px; }
 
-    /* ALTERADO: Esconde o gráfico E A LOGO em telas pequenas (celulares) */
     @media (max-width: 768px) {
         .grafico-fixo, .logo-fixa {
             display: none !important;
@@ -61,7 +60,9 @@ st.markdown(CSS_STYLE, unsafe_allow_html=True)
 # --- DADOS E PREÇOS ---
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
-preco_suporte_driver = 50.00  # <--- PREÇO ADICIONADO
+preco_suporte_driver = 50.00
+preco_suporte_controlador = 15.00
+preco_suporte_maxfinder = 70.00
 precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
@@ -168,23 +169,44 @@ st.title("Central de Custos | Sinalização")
 st.markdown("### 🔊 Maxfinder")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
 
+# --- Opções de Driver e seu Suporte ---
 qtd_driver = 0
-adicionar_suporte = False 
-
+adicionar_suporte_driver = False
 if amplificador in ["100W", "200W"]:
     if st.selectbox("Acompanha driver?", ["Não", "Sim"]) == "Sim":
         qtd_driver = 1 if amplificador == "100W" else 2
-        adicionar_suporte = st.checkbox("Adicionar suporte de driver")
+        adicionar_suporte_driver = st.checkbox("Adicionar suporte de driver")
 
+# --- Opções de Controlador e seu Suporte ---
 controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
+adicionar_suporte_controlador = False
+if precos_controlador[controlador_tipo] > 0:
+    adicionar_suporte_controlador = st.checkbox("Adicionar suporte do controlador")
 
-custo_suporte = 0
-if adicionar_suporte and qtd_driver > 0:
-    custo_suporte = qtd_driver * preco_suporte_driver
+# --- Opção de Suporte do Maxfinder (Amplificador) ---
+adicionar_suporte_maxfinder = False
+if precos_amplificador[amplificador] > 0:
+    adicionar_suporte_maxfinder = st.checkbox("Adicionar suporte da Maxfinder")
 
-subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo] + custo_suporte
+
+# --- Cálculo de todos os custos da seção ---
+custo_suporte_driver_total = 0
+if adicionar_suporte_driver and qtd_driver > 0:
+    custo_suporte_driver_total = qtd_driver * preco_suporte_driver
+
+custo_suporte_controlador_total = preco_suporte_controlador if adicionar_suporte_controlador else 0
+custo_suporte_maxfinder_total = preco_suporte_maxfinder if adicionar_suporte_maxfinder else 0
+
+subtotal_eletronicos = (precos_amplificador[amplificador] +
+                        (qtd_driver * preco_driver) +
+                        precos_controlador[controlador_tipo] +
+                        custo_suporte_driver_total +
+                        custo_suporte_controlador_total +
+                        custo_suporte_maxfinder_total)
+
 st.markdown(f'<p class="subtotal-container">Subtotal Maxfinder: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
+
 
 st.markdown("### 🔧 Módulos Auxiliares")
 qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0)
