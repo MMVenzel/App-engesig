@@ -61,6 +61,7 @@ st.markdown(CSS_STYLE, unsafe_allow_html=True)
 # --- DADOS E PREÇOS ---
 precos_amplificador = {"Nenhum": 0, "100W": 338.19, "200W": 547.47, "Moto": 392.55}
 preco_driver = 319.81
+preco_suporte_driver = 50.00  # <--- PREÇO ADICIONADO
 precos_controlador = {
     "Nenhum": 0, "Micro 3B Moto": 102.98, "Micro 3B C/ Mic": 145.50, "Micro 4B com Mic": 145.36,
     "Handheld 9B Magnético": 236.44, "Controlador Fixo 15B": 206.30, "Controlador Fixo 17B": 216.60
@@ -69,12 +70,21 @@ precos_modulo = {"Nenhum": 0, "Nano": 39.67, "Micro": 25.69, "D-Max": 28.17}
 precos_sinalizador_teto = {"Nenhum": 0, "Sirius": 634.17, "Brutale": 717.07}
 precos_kit_sinalizador = {"Sirius": 3.00, "Brutale": 7.00}
 precos_tipo_led_config = {
-    "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}}}
-precos_cor_led = {
-    "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58}
+    "Nano": {"3W": {"Single": 20.90, "Dual": 31.27, "Tri": 33.51}},
+    "Micro": {"3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 13.97}, "Q-MAX": {"Single": 7.3}},
+    "D-Max": {"3W": {"Single": 15.20, "Dual": 19.97, "Tri": 23.51}, "OPT": {"Single": 15.31}, "Q-MAX": {"Single": 9.1}},
+    "Sinalizador": {"3W": {"Single": 14.89, "Dual": 19.09, "Tri": 20.56}, "OPT": {"Single": 17.09}, "Q-MAX": {"Single": 7.3}}
 }
-
-limite_cores = {("Nano", "3W"): 3}
+precos_cor_led = {
+    "3W": {"Amber": 5.79, "Red": 3.58, "Blue": 3.58, "White": 3.58},
+    "OPT": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60},
+    "Q-MAX": {"Amber": 1.36, "Red": 0.86, "Blue": 1.00, "White": 1.60}
+}
+limite_cores = {
+    ("Nano", "3W"): 3, ("Micro", "3W"): 3, ("Micro", "OPT"): 1, ("Micro", "Q-MAX"): 1,
+    ("D-Max", "3W"): 3, ("D-Max", "OPT"): 2, ("D-Max", "Q-MAX"): 1,
+    ("Sinalizador", "3W"): 3, ("Sinalizador", "OPT"): 1, ("Sinalizador", "Q-MAX"): 1
+}
 
 # --- FUNÇÕES AUXILIARES ---
 def calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas):
@@ -154,24 +164,26 @@ def gerar_pdf(dados_relatorio):
 # --- INTERFACE PRINCIPAL ---
 st.title("Central de Custos | Sinalização")
 
+# --- SEÇÃO MAXFINDER MODIFICADA ---
 st.markdown("### 🔊 Maxfinder")
 amplificador = st.selectbox("Escolha o amplificador:", list(precos_amplificador.keys()))
+
 qtd_driver = 0
+adicionar_suporte = False 
+
 if amplificador in ["100W", "200W"]:
     if st.selectbox("Acompanha driver?", ["Não", "Sim"]) == "Sim":
         qtd_driver = 1 if amplificador == "100W" else 2
+        adicionar_suporte = st.checkbox("Adicionar suporte de driver")
 
-# --- Adicionando a checkbox "Adicionar suporte de driver" --- 
-suporte_driver = st.checkbox("Adicionar suporte de driver (R$ 50,00 por driver)")
+controlador_tipo = st.selectbox("Escolha o tipo de controlador:", list(precos_controlador.keys()))
 
-# Calcular o custo adicional se a checkbox for marcada
-custo_suporte_driver = 0
-if suporte_driver:
-    custo_suporte_driver = 50 * qtd_driver  # Adiciona R$ 50,00 por cada driver (1 ou 2)
-    
-# Subtotal de eletrônicos incluindo o custo do suporte de driver
-subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador["Micro 3B Moto"] + custo_suporte_driver
-st.markdown(f'<p class="subtotal-container">Subtotal Maxfinder (incluindo suporte de driver): <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
+custo_suporte = 0
+if adicionar_suporte and qtd_driver > 0:
+    custo_suporte = qtd_driver * preco_suporte_driver
+
+subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador[controlador_tipo] + custo_suporte
+st.markdown(f'<p class="subtotal-container">Subtotal Maxfinder: <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
 
 st.markdown("### 🔧 Módulos Auxiliares")
