@@ -173,3 +173,128 @@ if suporte_driver:
 subtotal_eletronicos = precos_amplificador[amplificador] + (qtd_driver * preco_driver) + precos_controlador["Micro 3B Moto"] + custo_suporte_driver
 st.markdown(f'<p class="subtotal-container">Subtotal Maxfinder (incluindo suporte de driver): <span>R$ {subtotal_eletronicos:.2f}</span></p>', unsafe_allow_html=True)
 st.markdown("---")
+
+st.markdown("### 🔧 Módulos Auxiliares")
+qtd_modelos_modulos = st.number_input("Quantos modelos de módulos deseja adicionar?", min_value=0, step=1, value=0)
+valores_modulos = []
+for i in range(qtd_modelos_modulos):
+    with st.expander(f"Modelo de Módulo Auxiliar #{i+1}"):
+        tipo_modulo = st.selectbox(f"Tipo de módulo:", ["Nano", "Micro", "D-Max"], key=f"tipo_modulo_{i}")
+        qtd_mod = st.number_input(f"Quantidade de módulos:", min_value=1, step=1, value=1, key=f"qtd_modulo_{i}")
+        tipos_led_disponiveis = list(precos_tipo_led_config[tipo_modulo].keys())
+        tipo_led = st.selectbox(f"Tipo de LED:", tipos_led_disponiveis, key=f"tipo_led_{i}")
+        max_cores = limite_cores.get((tipo_modulo, tipo_led), 1)
+        cols = st.columns(4)
+        usar_amber, usar_red, usar_blue, usar_white = cols[0].checkbox("Amber", key=f"amber_{i}"), cols[1].checkbox("Red", key=f"red_{i}"), cols[2].checkbox("Blue", key=f"blue_{i}"), cols[3].checkbox("White", key=f"white_{i}")
+        cores_escolhidas = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber, usar_red, usar_blue, usar_white]) if u]
+        if len(cores_escolhidas) > max_cores:
+            st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
+            continue
+        qtd_leds_por_cor = {}
+        for cor in cores_escolhidas:
+            limite = calcular_limite_leds(tipo_modulo, tipo_led, cores_escolhidas)
+            qtd = st.number_input(f"Qtd LEDs {cor} (máx {limite}):", min_value=0, max_value=limite, step=1, key=f"qtd_{cor}_{i}")
+            qtd_leds_por_cor[cor] = qtd
+        config_led = "Single"
+        if len(cores_escolhidas) > 0: config_led = ["Single", "Dual", "Tri"][len(cores_escolhidas) - 1]
+        preco_placa = precos_tipo_led_config[tipo_modulo][tipo_led].get(config_led, 0)
+        preco_base_mod = precos_modulo.get(tipo_modulo, 0)
+        preco_leds = sum(qtd * precos_cor_led[tipo_led][cor] for cor, qtd in qtd_leds_por_cor.items())
+        valores_modulos.append((preco_base_mod + preco_placa + preco_leds) * qtd_mod)
+
+valor_total_modulos = sum(valores_modulos)
+if qtd_modelos_modulos > 0:
+    st.markdown(f'<p class="subtotal-container">Subtotal dos Módulos Auxiliares: <span>R$ {valor_total_modulos:.2f}</span></p>', unsafe_allow_html=True)
+st.markdown("---")
+
+st.markdown("### 🚨 Sinalizador de Teto")
+sinalizador_tipo = st.selectbox("Escolha o sinalizador de teto:", list(precos_sinalizador_teto.keys()))
+
+valor_total_sinalizador = 0
+if sinalizador_tipo != "Nenhum":
+    base_sinalizador = precos_sinalizador_teto.get(sinalizador_tipo, 0)
+    tipo_led_sinalizador = st.selectbox("Tipo de LED do Sinalizador:", ["3W", "OPT", "Q-MAX"], key="sinalizador_led_type")
+    qtd_modelos_sinalizador = st.number_input("Quantos modelos de módulos para o sinalizador?", min_value=0, step=1, value=0)
+    modulos_sinalizador = 0
+    total_modulos_sinalizador_count = 0
+    for j in range(qtd_modelos_sinalizador):
+        with st.expander(f"Modelo de Módulo Sinalizador #{j+1}"):
+            qtd_mod_sinalizador = st.number_input(f"Qtd de módulos do modelo:", min_value=1, step=1, value=1, key=f"qtd_mod_sinalizador_{j}")
+            total_modulos_sinalizador_count += qtd_mod_sinalizador
+            max_cores = limite_cores.get(("Sinalizador", tipo_led_sinalizador), 1)
+            cols_s = st.columns(4)
+            usar_amber_s, usar_red_s, usar_blue_s, usar_white_s = cols_s[0].checkbox("Amber", key=f"amber_s_{j}"), cols_s[1].checkbox("Red", key=f"red_s_{j}"), cols_s[2].checkbox("Blue", key=f"blue_s_{j}"), cols_s[3].checkbox("White", key=f"white_s_{j}")
+            cores_s = [c for c, u in zip(["Amber", "Red", "Blue", "White"], [usar_amber_s, usar_red_s, usar_blue_s, usar_white_s]) if u]
+            if len(cores_s) > max_cores:
+                st.error(f"⚠️ Máximo de {max_cores} cor(es) para esta configuração.")
+                continue
+            leds_s = {}
+            total_leds_no_modulo = 0
+            for cor_s in cores_s:
+                limite_s = calcular_limite_leds("Sinalizador", tipo_led_sinalizador, cores_s)
+                qtd_s = st.number_input(f"Qtd LEDs {cor_s} (máx {limite_s}):", min_value=0, max_value=limite_s, step=1, key=f"qtd_s_{cor_s}_{j}")
+                leds_s[cor_s] = qtd_s
+                total_leds_no_modulo += qtd_s
+            config_led_s = "Single"
+            if len(cores_s) > 0: config_led_s = ["Single", "Dual", "Tri"][len(cores_s) - 1]
+            if tipo_led_sinalizador == "OPT":
+                preco_placa_s = precos_tipo_led_config["Sinalizador"][tipo_led_sinalizador].get(config_led_s, 0)
+            else:
+                preco_placa_s = precos_tipo_led_config["D-Max"][tipo_led_sinalizador].get(config_led_s, 0)
+            preco_leds_s = sum(qtd * precos_cor_led[tipo_led_sinalizador][cor] for cor, qtd in leds_s.items())
+            valor_por_modelo_s = preco_placa_s + preco_leds_s
+            if sinalizador_tipo == "Sirius" and total_leds_no_modulo >= 6:
+                valor_por_modelo_s += 10.80
+            modulos_sinalizador += valor_por_modelo_s * qtd_mod_sinalizador
+    custo_kit = precos_kit_sinalizador.get(sinalizador_tipo, 0) * total_modulos_sinalizador_count
+    valor_total_sinalizador = base_sinalizador + modulos_sinalizador + custo_kit
+
+if sinalizador_tipo != "Nenhum":
+    st.markdown(f'<p class="subtotal-container">Subtotal do Sinalizador de Teto: <span>R$ {valor_total_sinalizador:.2f}</span></p>', unsafe_allow_html=True)
+    st.markdown('<p class="observacao">Obs.: Valor aproximado.</p>', unsafe_allow_html=True)
+st.markdown("---")
+
+# --- CÁLCULO FINAL E BOTÃO ---
+total = subtotal_eletronicos + valor_total_modulos + valor_total_sinalizador
+st.subheader(f"💵 Custo Estimado Total: R$ {total:.2f}")
+
+if total > 0:
+    buf = io.BytesIO()
+    labels, values, colors, text_colors = [], [], [], []
+    if subtotal_eletronicos > 0: labels.append("Maxfinder"); values.append(subtotal_eletronicos); colors.append('#e50914'); text_colors.append("white")
+    if valor_total_modulos > 0: labels.append("Módulos Aux."); values.append(valor_total_modulos); colors.append('#888888'); text_colors.append("white")
+    if valor_total_sinalizador > 0: labels.append("Sinalizador Teto"); values.append(valor_total_sinalizador); colors.append('#ffffff'); text_colors.append("black")
+    if values:
+        fig, ax = plt.subplots(figsize=(3.2, 3.2), facecolor='none')
+        wedges, texts, autotexts = ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 9})
+        for text in texts: text.set_color("white")
+        for i, autotext in enumerate(autotexts): autotext.set_color(text_colors[i])
+        for w in wedges: w.set_edgecolor("black"); w.set_linewidth(1.5)
+        ax.axis('equal')
+        fig.savefig(buf, format="png", transparent=True)
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.getvalue()).decode()
+        st.markdown(f'<img class="grafico-fixo" src="data:image/png;base64,{img_base64}">', unsafe_allow_html=True)
+
+    dados_para_pdf = {
+        "subtotal_eletronicos": subtotal_eletronicos,
+        "valor_total_modulos": valor_total_modulos,
+        "sinalizador_tipo": sinalizador_tipo,
+        "valor_total_sinalizador": valor_total_sinalizador,
+        "total": total,
+        "imagem_bytes": buf.getvalue()
+    }
+    
+    st.download_button(
+        label="📄 Gerar e Baixar Relatório",
+        data=gerar_pdf(dados_para_pdf),
+        file_name=f"relatorio_custos_{datetime.now().strftime('%Y%m%d-%H%M')}.pdf",
+        mime='application/pdf'
+    )
+
+# --- RODAPÉ E LOGO ---
+st.markdown('<div class="rodape">© 2025 by Engesig. Created by Matteo Marques & Matheus Venzel</div>', unsafe_allow_html=True)
+logo_path = Path("logo.png")
+if logo_path.exists():
+    logo_base64 = base64.b64encode(logo_path.read_bytes()).decode()
+    st.markdown(f'<img class="logo-fixa" src="data:image/png;base64,{logo_base64}">', unsafe_allow_html=True)
